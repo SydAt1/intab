@@ -1,6 +1,7 @@
 from db.connection import SessionLocal
 from db.models import User
 from .password_utils import hash_password, verify_password
+from src.util.sessionHandler import require_session, SessionManager
 
 def register_user(username, email, password):
     session = SessionLocal()

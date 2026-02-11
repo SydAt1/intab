@@ -488,8 +488,8 @@
             .then(html => {
                 document.getElementById('sidebar-container').innerHTML = html;
 
-                // No active item needed on signup (or set to none)
-                // document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+                // Update sidebar with user info
+                if (window.Auth) Auth.updateSidebar();
             })
             .catch(err => {
                 console.error(err);
@@ -559,7 +559,7 @@
             };
 
             try {
-                const res = await fetch('/register', {
+                const res = await fetch('/api/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)

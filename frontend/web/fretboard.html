@@ -568,7 +568,11 @@
         </main>
     </div>
 
+    <script src="/static/js/auth.js"></script>
     <script>
+        // Check if user is logged in immediately
+        Auth.requireLogin();
+
         // ── Load sidebar (same as previous file) ──
         fetch('sidenav.html')
             .then(response => {
@@ -583,6 +587,9 @@
                         item.classList.add('active');
                     }
                 });
+
+                // Update sidebar with user info
+                Auth.updateSidebar();
             })
             .catch(err => {
                 console.error(err);

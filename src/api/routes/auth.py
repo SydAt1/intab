@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Header
+from typing import Optional
 from sqlalchemy.orm import Session
 from src.db.connection import get_db
 from src.db.models import User
@@ -58,6 +59,27 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
         "user": db_user
     }
 
-@router.get("/me", response_model=UserResponse)
-def read_users_me(current_user: User = Depends(get_current_user)):
+from src.util.sessionHandler import require_session
+
+@router.get("/me")
+async def read_users_me(
+    current_user: User = Depends(get_current_user),
+    x_session_id: Optional[str] = Header(None, alias="X-Session-Id")
+):
+    session = session_manager.get_session(x_session_id) if x_session_id else None
+    if session:
+        return {"username": session["username"], "is_active": True}
     return current_user
+
+@router.post("/logout")
+async def logout(session: dict = Depends(require_session)):
+    """
+    Logout endpoint that invalidates the user's session.
+    Requires valid X-Session-Id header.
+    """
+    # The session dict contains session_id from require_session dependency
+    session_id = session.get("session_id")
+    if session_id:
+        session_manager.delete_session(session_id)
+    
+    return {"message": "Logged out successfully"}

@@ -6,7 +6,17 @@ import os
 
 app = FastAPI(title="Int6 API")
 
-app.include_router(auth.router)
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(auth.router, prefix="/api")
 app.include_router(fretboard_api.router)
 
 @app.get("/api/health")

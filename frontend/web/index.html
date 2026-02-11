@@ -246,6 +246,9 @@
                         link.classList.add('active');
                     }
                 });
+
+                // Update sidebar with user info
+                Auth.updateSidebar();
             })
             .catch(err => {
                 console.error('Sidebar loading error:', err);

@@ -54,4 +54,7 @@ def require_session(x_session_id: Optional[str] = Header(None)):
             detail="Session ID missing"
         )
 
-    return session_manager.validate_session(x_session_id)
+    session_data = session_manager.validate_session(x_session_id)
+    # Add the session_id to the returned dict for logout endpoint
+    session_data["session_id"] = x_session_id
+    return session_data
