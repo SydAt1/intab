@@ -1,0 +1,346 @@
+<style>
+    .sidebar {
+        width: 85px;
+        background-color: var(--spotify-black);
+        padding: 1.5rem 0.75rem;
+        display: flex;
+        flex-direction: column;
+        transition: width 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+        border-right: 1px solid rgba(255, 255, 255, 0.05);
+        height: 100%;
+        overflow: hidden;
+        flex-shrink: 0;
+        position: relative;
+        z-index: 20;
+    }
+
+    /* Expand on hover */
+    .sidebar:hover {
+        width: 260px;
+    }
+
+    .logo-container {
+        margin-bottom: 2.5rem;
+        padding-left: 0.5rem;
+        display: flex;
+        align-items: center;
+    }
+
+    .logo {
+        width: 45px;
+        height: 45px;
+        background: var(--spotify-green);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 900;
+        color: black;
+        font-size: 1.4rem;
+        flex-shrink: 0;
+    }
+
+    .nav-menu {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .nav-item {
+        padding: 0.8rem 1rem;
+        border-radius: 6px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 1.2rem;
+        color: var(--spotify-text-sub);
+        text-decoration: none;
+        transition: all 0.4s cubic-bezier(0.3, 0, 0, 1);
+        white-space: nowrap;
+    }
+
+    .nav-icon {
+        font-size: 1.4rem;
+        min-width: 28px;
+        text-align: center;
+        display: flex;
+        justify-content: center;
+    }
+
+    .nav-text {
+        opacity: 0;
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: opacity 0.3s ease;
+    }
+
+    .sidebar:hover .nav-text {
+        opacity: 1;
+    }
+
+    .nav-item:hover {
+        color: var(--spotify-text-main);
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    .nav-item.active {
+        color: var(--spotify-text-main);
+        background: var(--spotify-light-grey);
+    }
+
+    .nav-item.active .nav-icon {
+        color: var(--spotify-green);
+    }
+
+    /* User Profile */
+    .user-profile {
+        margin-top: auto;
+        padding: 12px;
+        background: var(--spotify-dark-grey);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        transition: all 0.4s cubic-bezier(0.3, 0, 0, 1);
+        border: 1px solid rgba(255, 255, 255, 0.03);
+        cursor: pointer;
+    }
+
+    .user-profile:hover {
+        background: var(--spotify-light-grey);
+    }
+
+    .user-icon {
+        width: 36px;
+        height: 36px;
+        background: linear-gradient(135deg, var(--spotify-green), #1ed760);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        flex-shrink: 0;
+        color: black;
+        font-size: 0.9rem;
+    }
+
+    .user-details {
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        overflow: hidden;
+        min-width: 0;
+    }
+
+    .sidebar:hover .user-details {
+        opacity: 1;
+    }
+
+    .user-name {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--spotify-text-main);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .user-status {
+        font-size: 0.7rem;
+        color: var(--spotify-green);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 800;
+    }
+
+    .user-skeleton {
+        width: 120px;
+        height: 12px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+        animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+
+        0%,
+        100% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0.5;
+        }
+    }
+
+    @media (max-width: 900px) {
+        .sidebar {
+            width: 100% !important;
+            height: auto;
+            flex-direction: row;
+            padding: 1rem;
+            border-right: none;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .nav-menu {
+            flex-direction: row;
+            gap: 1.5rem;
+            justify-content: center;
+            flex: unset;
+        }
+
+        .user-profile {
+            margin-top: 0;
+            margin-left: auto;
+        }
+
+        .sidebar:hover {
+            width: 100% !important;
+        }
+
+        .sidebar:hover .nav-text,
+        .sidebar:hover .user-details {
+            opacity: 1;
+        }
+    }
+</style>
+
+<aside class="sidebar" id="appSidebar">
+    <div class="logo-container">
+        <div class="logo">T</div>
+    </div>
+
+    <nav class="nav-menu">
+        <a href="index.html" class="nav-item" data-page="home">
+            <span class="nav-icon">🏠</span>
+            <span class="nav-text">Home</span>
+        </a>
+        <a href="input-processing.html" class="nav-item" data-page="input">
+            <span class="nav-icon">🔍</span>
+            <span class="nav-text">Search & Input</span>
+        </a>
+        <a href="fretboard.html" class="nav-item" data-page="fretboard">
+            <span class="nav-icon">🎸</span>
+            <span class="nav-text">Your Fretboard</span>
+        </a>
+        <a href="output-editing.html" class="nav-item" data-page="output">
+            <span class="nav-icon">📊</span>
+            <span class="nav-text">Analysis</span>
+        </a>
+        <a href="history.html" class="nav-item" data-page="history">
+            <span class="nav-icon">🕒</span>
+            <span class="nav-text">History</span>
+        </a>
+    </nav>
+
+    <div class="user-profile" id="userProfile">
+        <div class="user-icon" id="userIcon">?</div>
+        <div class="user-details" id="userDetails">
+            <div class="user-name" id="userName">Loading...</div>
+            <div class="user-status" id="userStatus">...</div>
+        </div>
+    </div>
+</aside>
+
+<script>
+    (function () {
+        // Set active navigation item based on current page
+        const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+        const navItems = document.querySelectorAll('.nav-item');
+
+        navItems.forEach(item => {
+            const href = item.getAttribute('href');
+            if (href === currentPage || (currentPage === '' && href === 'index.html')) {
+                item.classList.add('active');
+            }
+        });
+
+        // Fetch user data from session/API
+        async function loadUserData() {
+            try {
+                // Get session ID from localStorage
+                const sessionId = localStorage.getItem('session_id');
+                const token = localStorage.getItem('access_token');
+
+                if (!sessionId && !token) {
+                    // No session - show guest user
+                    showGuestUser();
+                    return;
+                }
+
+                // Call /me endpoint to get user data
+                const response = await fetch('/me', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch user data');
+                }
+
+                const userData = await response.json();
+                updateUserProfile(userData);
+
+            } catch (error) {
+                console.error('Error loading user data:', error);
+                showGuestUser();
+            }
+        }
+
+        // Update user profile UI
+        function updateUserProfile(user) {
+            const userName = document.getElementById('userName');
+            const userStatus = document.getElementById('userStatus');
+            const userIcon = document.getElementById('userIcon');
+
+            // Set user name
+            userName.textContent = user.username || user.email?.split('@')[0] || 'User';
+
+            // Set status (you can customize based on user.subscription_type or similar)
+            userStatus.textContent = user.is_premium ? 'Premium' : 'Free';
+
+            // Set icon (first letter of username)
+            const initial = (user.username || user.email || 'U')[0].toUpperCase();
+            userIcon.textContent = initial;
+
+            // Store user data for other pages
+            localStorage.setItem('user_data', JSON.stringify(user));
+        }
+
+        // Show guest user if not logged in
+        function showGuestUser() {
+            const userName = document.getElementById('userName');
+            const userStatus = document.getElementById('userStatus');
+            const userIcon = document.getElementById('userIcon');
+
+            userName.textContent = 'Guest';
+            userStatus.textContent = 'Sign In';
+            userIcon.textContent = '?';
+
+            // Make profile clickable to go to login
+            const userProfile = document.getElementById('userProfile');
+            userProfile.style.cursor = 'pointer';
+            userProfile.addEventListener('click', () => {
+                window.location.href = '/login';
+            });
+        }
+
+        // Load user data on sidebar load
+        loadUserData();
+
+        // Add logout functionality (optional)
+        document.getElementById('userProfile').addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            if (confirm('Do you want to logout?')) {
+                localStorage.removeItem('session_id');
+                localStorage.removeItem('access_token');
+                localStorage.removeItem('user_data');
+                window.location.href = '/login';
+            }
+        });
+    })();
+</script>
