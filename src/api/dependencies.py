@@ -16,7 +16,6 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
             detail="Could not validate credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    
     username: str = payload.get("sub")
     if username is None:
         raise HTTPException(

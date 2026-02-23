@@ -227,4 +227,4 @@ async def chord_classifier_health():
         "service": "chord_classification",
         "model_loaded": classifier.is_trained,
         "model_type": classifier.model_type
-    }
+    }   

@@ -7,3 +7,4 @@ create_tables()
 # Test register & login
 register_user("testuser", "test@example.com", "mypassword")
 login_user("testuser", "mypassword")
+

@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from src.api.routes import auth
+from src.api.routes import auth, transcription, upload
 from src.fretboard import fretboard_api
 from fastapi.staticfiles import StaticFiles
 import os
@@ -17,6 +17,8 @@ app.add_middleware(
 )
 
 app.include_router(auth.router, prefix="/api")
+app.include_router(upload.router, prefix="/api")
+app.include_router(transcription.router, prefix="/api")
 app.include_router(fretboard_api.router)
 
 @app.get("/api/health")
