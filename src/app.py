@@ -20,6 +20,13 @@ app.include_router(auth.router, prefix="/api")
 app.include_router(upload.router, prefix="/api")
 app.include_router(transcription.router, prefix="/api")
 app.include_router(fretboard_api.router)
+from src.api.routes import audio
+app.include_router(audio.router, prefix="/api")
+
+@app.on_event("startup")
+async def startup_event():
+    from src.core import minio_client
+    minio_client.ensure_bucket_exists()
 
 @app.get("/api/health")
 def read_root():

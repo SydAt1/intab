@@ -1,5 +1,7 @@
-from db.connection import engine
-from db.models import Base
+from src.db.connection import engine
+from src.db.models import Base
+from src.db.audio_model import AudioFile
+from src.db.tablature_model import Tablature
 
 def create_tables():
     Base.metadata.create_all(engine)

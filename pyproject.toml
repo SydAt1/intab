@@ -9,6 +9,8 @@ dependencies = [
     "dotenv>=0.9.9",
     "email-validator>=2.3.0",
     "fastapi>=0.128.1",
+    "boto3>=1.34.0",
+    "python-multipart>=0.0.9",
     "librosa>=0.11.0",
     "matplotlib>=3.10.8",
     "pandas>=3.0.0",
@@ -22,7 +24,6 @@ dependencies = [
     "supabase>=2.27.1",
     "torch>=2.10.0",
     "torchaudio>=2.10.0",
-    "typing>=3.10.0.0",
     "uvicorn>=0.40.0",
     "werkzeug>=3.1.5",
 ]
