@@ -1,0 +1,404 @@
+:root {
+            --spotify-green: #1DB954;
+            --spotify-black: #000000;
+            --spotify-dark-grey: #121212;
+            --spotify-light-grey: #282828;
+            --spotify-text-main: #FFFFFF;
+            --spotify-text-sub: #B3B3B3;
+            --transition-smooth: all 0.4s cubic-bezier(0.3, 0, 0, 1);
+            --error: #E22134;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Figtree', sans-serif;
+            background: var(--spotify-black);
+            color: var(--spotify-text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            position: relative;
+            z-index: 30;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.2rem 2rem;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .header-title {
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: var(--spotify-text-sub);
+        }
+
+        .app-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Sidebar – exact match from previous pages */
+        .sidebar {
+            width: 85px;
+            background-color: var(--spotify-black);
+            padding: 1.5rem 0.75rem;
+            display: flex;
+            flex-direction: column;
+            transition: width 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            height: 100%;
+            overflow: hidden;
+            flex-shrink: 0;
+            z-index: 20;
+        }
+
+        .sidebar:hover {
+            width: 260px;
+        }
+
+        .logo-container {
+            margin-bottom: 2.5rem;
+            padding-left: 0.5rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .logo {
+            width: 45px;
+            height: 45px;
+            background: var(--spotify-green);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            color: black;
+            font-size: 1.4rem;
+            flex-shrink: 0;
+        }
+
+        .nav-menu {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .nav-item {
+            padding: 0.8rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+            color: var(--spotify-text-sub);
+            text-decoration: none;
+            transition: var(--transition-smooth);
+            white-space: nowrap;
+        }
+
+        .nav-icon {
+            font-size: 1.4rem;
+            min-width: 28px;
+            text-align: center;
+        }
+
+        .nav-text {
+            opacity: 0;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: opacity 0.3s ease;
+        }
+
+        .sidebar:hover .nav-text {
+            opacity: 1;
+        }
+
+        .nav-item:hover {
+            color: var(--spotify-text-main);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .nav-item.active {
+            color: var(--spotify-text-main);
+            background: var(--spotify-light-grey);
+        }
+
+        .nav-item.active .nav-icon {
+            color: var(--spotify-green);
+        }
+
+        .user-profile {
+            margin-top: auto;
+            padding: 12px;
+            background: var(--spotify-dark-grey);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .user-icon {
+            width: 36px;
+            height: 36px;
+            background: #535353;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+            color: white;
+        }
+
+        .user-details {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            overflow: hidden;
+        }
+
+        .sidebar:hover .user-details {
+            opacity: 1;
+        }
+
+        .user-name {
+            font-size: 0.85rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .user-status {
+            font-size: 0.7rem;
+            color: var(--spotify-green);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 800;
+        }
+
+        /* Signup Content */
+        .signup-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .card {
+            width: 100%;
+            max-width: 480px;
+            background: var(--spotify-dark-grey);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 3rem 2.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+        }
+
+        .header-logo {
+            width: 80px;
+            height: 80px;
+            background: var(--spotify-green);
+            border-radius: 16px;
+            margin: 0 auto 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.2rem;
+            font-weight: 900;
+            color: black;
+        }
+
+        .title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: var(--spotify-text-sub);
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.6rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.6rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--spotify-text-main);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.9rem 1.1rem;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--spotify-green);
+            box-shadow: 0 0 0 3px rgba(29, 185, 84, 0.2);
+        }
+
+        .form-input.error {
+            border-color: var(--error);
+        }
+
+        .error-message {
+            color: var(--error);
+            font-size: 0.8rem;
+            margin-top: 0.4rem;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.8rem;
+            margin: 1.8rem 0;
+        }
+
+        .checkbox-input {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--spotify-green);
+        }
+
+        .checkbox-label {
+            font-size: 0.9rem;
+            color: var(--spotify-text-sub);
+        }
+
+        .checkbox-label a {
+            color: var(--spotify-green);
+            text-decoration: none;
+        }
+
+        .checkbox-label a:hover {
+            text-decoration: underline;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 1rem;
+            background: var(--spotify-green);
+            color: black;
+            border: none;
+            border-radius: 500px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.25s;
+        }
+
+        .btn-primary:hover {
+            background: #1ed760;
+            transform: scale(1.02);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .form-footer {
+            text-align: center;
+            margin-top: 2rem;
+            color: var(--spotify-text-sub);
+            font-size: 0.95rem;
+        }
+
+        .form-footer a {
+            color: var(--spotify-green);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .form-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .success-message {
+            background: rgba(29, 185, 84, 0.15);
+            border: 1px solid var(--spotify-green);
+            color: var(--spotify-green);
+            padding: 1rem;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        @media (max-width: 900px) {
+            .app-container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100% !important;
+                height: auto;
+                flex-direction: row;
+                padding: 1rem;
+                border-right: none;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            }
+
+            .sidebar:hover {
+                width: 100% !important;
+            }
+
+            .nav-menu {
+                flex-direction: row;
+                gap: 1.5rem;
+                justify-content: center;
+                flex: 1;
+            }
+
+            .user-profile {
+                margin-top: 0;
+                margin-left: auto;
+            }
+        }
+
+        @media (max-width: 500px) {
+            .card {
+                padding: 2rem 1.5rem;
+            }
+
+            .title {
+                font-size: 1.8rem;
+            }
+        }

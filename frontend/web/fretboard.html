@@ -7,470 +7,8 @@
     <title>Guitar Fretboard | Tablature Intelligence</title>
     <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet" />
-
-    <style>
-        :root {
-            --spotify-green: #1DB954;
-            --spotify-black: #000000;
-            --spotify-dark-grey: #121212;
-            --spotify-light-grey: #282828;
-            --spotify-text-main: #FFFFFF;
-            --spotify-text-sub: #B3B3B3;
-            --transition-smooth: all 0.4s cubic-bezier(0.3, 0, 0, 1);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Figtree', sans-serif;
-            background: var(--spotify-black);
-            color: var(--spotify-text-main);
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        .header {
-            position: relative;
-            z-index: 30;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 1.2rem 2rem;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .header-title {
-            font-size: 1rem;
-            font-weight: 700;
-            letter-spacing: 1px;
-            color: var(--spotify-text-sub);
-        }
-
-        .app-container {
-            display: flex;
-            height: calc(100vh - 62px);
-        }
-
-        /* ── Sidebar (matches sidenav.html exactly) ── */
-        .sidebar {
-            width: 85px;
-            background-color: var(--spotify-black);
-            padding: 1.5rem 0.75rem;
-            display: flex;
-            flex-direction: column;
-            transition: width 0.45s cubic-bezier(0.4, 0, 0.2, 1);
-            border-right: 1px solid rgba(255, 255, 255, 0.05);
-            height: 100%;
-            overflow: hidden;
-            flex-shrink: 0;
-            z-index: 20;
-        }
-
-        .sidebar:hover {
-            width: 260px;
-        }
-
-        .logo-container {
-            margin-bottom: 2.5rem;
-            padding-left: 0.5rem;
-            display: flex;
-            align-items: center;
-        }
-
-        .logo {
-            width: 45px;
-            height: 45px;
-            background: var(--spotify-green);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 900;
-            color: black;
-            font-size: 1.4rem;
-            flex-shrink: 0;
-        }
-
-        .nav-menu {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .nav-item {
-            padding: 0.8rem 1rem;
-            border-radius: 6px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 1.2rem;
-            color: var(--spotify-text-sub);
-            text-decoration: none;
-            transition: var(--transition-smooth);
-            white-space: nowrap;
-        }
-
-        .nav-icon {
-            font-size: 1.4rem;
-            min-width: 28px;
-            text-align: center;
-        }
-
-        .nav-text {
-            opacity: 0;
-            font-weight: 600;
-            font-size: 0.95rem;
-            transition: opacity 0.3s ease;
-        }
-
-        .sidebar:hover .nav-text {
-            opacity: 1;
-        }
-
-        .nav-item:hover {
-            color: var(--spotify-text-main);
-            background: rgba(255, 255, 255, 0.08);
-        }
-
-        .nav-item.active {
-            color: var(--spotify-text-main);
-            background: var(--spotify-light-grey);
-        }
-
-        .nav-item.active .nav-icon {
-            color: var(--spotify-green);
-        }
-
-        .user-profile {
-            margin-top: auto;
-            padding: 12px;
-            background: var(--spotify-dark-grey);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.03);
-        }
-
-        .user-icon {
-            width: 36px;
-            height: 36px;
-            background: #535353;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            flex-shrink: 0;
-            color: white;
-        }
-
-        .user-details {
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            overflow: hidden;
-        }
-
-        .sidebar:hover .user-details {
-            opacity: 1;
-        }
-
-        .user-name {
-            font-size: 0.85rem;
-            font-weight: 700;
-            white-space: nowrap;
-        }
-
-        .user-status {
-            font-size: 0.7rem;
-            color: var(--spotify-green);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-weight: 800;
-        }
-
-        /* ── Main Content ── */
-        .main-content {
-            flex: 1;
-            padding: 2rem;
-            overflow-y: auto;
-            background: linear-gradient(to bottom, #1e1e1e, var(--spotify-dark-grey));
-        }
-
-        .section-card {
-            background: var(--spotify-dark-grey);
-            border-radius: 12px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        .section-title {
-            font-size: 1.6rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-        }
-
-        .section-subtitle {
-            color: var(--spotify-text-sub);
-            margin-bottom: 1.5rem;
-            font-size: 0.95rem;
-        }
-
-        .chord-display {
-            display: flex;
-            gap: 2rem;
-            background: rgba(29, 185, 84, 0.08);
-            border-radius: 12px;
-            padding: 1.5rem;
-            border: 1px solid rgba(29, 185, 84, 0.2);
-        }
-
-        .chord-info {
-            flex: 1;
-        }
-
-        .chord-label {
-            color: var(--spotify-text-sub);
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 0.4rem;
-        }
-
-        .chord-name {
-            font-size: 3.2rem;
-            font-weight: 800;
-            color: var(--spotify-green);
-        }
-
-        .chord-notes {
-            color: var(--spotify-text-sub);
-            font-size: 1.1rem;
-            margin-top: 0.5rem;
-        }
-
-        .confidence-box {
-            text-align: center;
-            min-width: 140px;
-            padding: 1rem;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-        }
-
-        .confidence-label {
-            color: var(--spotify-text-sub);
-            font-size: 0.85rem;
-            margin-bottom: 0.3rem;
-        }
-
-        .confidence-value {
-            font-size: 2.4rem;
-            font-weight: 800;
-        }
-
-        /* Fretboard */
-        .fretboard-container {
-            background: var(--spotify-light-grey);
-            border-radius: 12px;
-            padding: 1.5rem;
-            overflow-x: auto;
-        }
-
-        .fretboard {
-            min-width: 900px;
-            background: linear-gradient(#4a3728, #3a2a1e);
-            border-radius: 8px;
-            padding: 1.5rem 1rem;
-        }
-
-        .string-container {
-            display: flex;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-
-        .string-label {
-            width: 40px;
-            text-align: center;
-            font-weight: 700;
-            color: #ddd;
-            background: rgba(0, 0, 0, 0.4);
-            border-radius: 6px;
-            padding: 0.4rem;
-            margin-right: 1rem;
-        }
-
-        .string {
-            flex: 1;
-            height: 50px;
-            position: relative;
-            display: flex;
-        }
-
-        .string::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            right: 0;
-            top: 50%;
-            height: 2px;
-            background: #c0c0c0;
-            box-shadow: 0 1px 3px #000;
-        }
-
-        .fret {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            cursor: pointer;
-        }
-
-        .fret::after {
-            content: '';
-            position: absolute;
-            right: -1.5px;
-            top: -8px;
-            bottom: -8px;
-            width: 3px;
-            background: linear-gradient(#ccc, #aaa, #ccc);
-            border-radius: 2px;
-        }
-
-        .fret:last-child::after {
-            display: none;
-        }
-
-        .note-dot {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            border: 2px solid rgba(255, 255, 255, 0.25);
-            transition: all 0.25s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .fret:hover .note-dot {
-            border-color: var(--spotify-green);
-            transform: scale(1.15);
-        }
-
-        .note-dot.active {
-            background: var(--spotify-green);
-            border-color: #000;
-            box-shadow: 0 0 18px rgba(29, 185, 84, 0.7);
-        }
-
-        .note-label {
-            font-size: 0.7rem;
-            font-weight: 700;
-            color: #000;
-            opacity: 0;
-        }
-
-        .note-dot.active .note-label {
-            opacity: 1;
-        }
-
-        /* Fret markers & numbers (simplified) */
-        .fret-markers,
-        .fret-numbers {
-            display: flex;
-            margin-left: 56px;
-            margin-top: 0.4rem;
-        }
-
-        .fret-marker,
-        .fret-number {
-            flex: 1;
-            text-align: center;
-        }
-
-        .marker-dot {
-            width: 8px;
-            height: 8px;
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            margin: 0 auto;
-        }
-
-        .marker-double {
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-        }
-
-        .fret-number {
-            color: var(--spotify-text-sub);
-            font-size: 0.8rem;
-        }
-
-        .instructions {
-            background: rgba(255, 255, 255, 0.03);
-            border-left: 4px solid var(--spotify-green);
-            padding: 1.2rem;
-            margin-top: 1.5rem;
-            border-radius: 6px;
-        }
-
-        .instructions h4 {
-            color: var(--spotify-green);
-            margin-bottom: 0.8rem;
-        }
-
-        .instructions ul {
-            list-style: none;
-            padding: 0;
-        }
-
-        .instructions li {
-            color: var(--spotify-text-sub);
-            margin: 0.5rem 0;
-        }
-
-        @media (max-width: 900px) {
-            .app-container {
-                flex-direction: column;
-            }
-
-            .sidebar {
-                width: 100% !important;
-                height: auto;
-                flex-direction: row;
-                padding: 1rem;
-                overflow-x: auto;
-            }
-
-            .sidebar:hover {
-                width: 100% !important;
-            }
-
-            .nav-menu {
-                flex-direction: row;
-                gap: 1.5rem;
-            }
-
-            .user-profile {
-                margin-top: 0;
-                margin-left: auto;
-            }
-
-            .chord-display {
-                flex-direction: column;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="css/fretboard.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
 </head>
 
 <body>
@@ -480,7 +18,6 @@
     </header>
 
     <div class="app-container">
-        <!-- Sidebar placeholder – will be injected or static -->
         <aside id="sidebar-container"></aside>
 
         <main class="main-content">
@@ -495,6 +32,11 @@
                         <div class="chord-notes">
                             Notes: <span id="chordNotes">Select positions on the fretboard</span>
                         </div>
+
+                        <!-- ── Play Button ── -->
+                        <button id="playBtn" onclick="playChord()" disabled title="Play selected notes">
+                            ▶ Play Chord
+                        </button>
                     </div>
                     <div class="confidence-box">
                         <div class="confidence-label">Confidence</div>
@@ -508,7 +50,6 @@
                 <p class="section-subtitle">Standard tuning (EADGBE) - click to toggle notes</p>
 
                 <div class="fretboard-container">
-                    <!-- Markers -->
                     <div class="fret-markers">
                         <div class="fret-marker"></div>
                         <div class="fret-marker"></div>
@@ -560,8 +101,9 @@
                     <ul>
                         <li>Click any fret to add/remove a note</li>
                         <li>Chord name & notes update automatically</li>
+                        <li>Hit <strong style="color:var(--spotify-green)">▶ Play Chord</strong> to hear the selected
+                            notes</li>
                         <li>Confidence reflects match strength (higher = greener)</li>
-                        <li>Use header buttons or sidebar to navigate</li>
                     </ul>
                 </div>
             </div>
@@ -570,35 +112,27 @@
 
     <script src="/static/js/auth.js"></script>
     <script>
-        // Check if user is logged in immediately
         Auth.requireLogin();
 
-        // ── Load sidebar (same as previous file) ──
         fetch('sidenav.html')
-            .then(response => {
-                if (!response.ok) throw new Error(`Sidebar load failed: ${response.status}`);
-                return response.text();
-            })
+            .then(r => { if (!r.ok) throw new Error(); return r.text(); })
             .then(html => {
                 document.getElementById('sidebar-container').innerHTML = html;
                 const current = window.location.pathname.split('/').pop() || 'index.html';
                 document.querySelectorAll('.nav-item').forEach(item => {
-                    if (item.getAttribute('href') === current) {
-                        item.classList.add('active');
-                    }
+                    if (item.getAttribute('href') === current) item.classList.add('active');
                 });
-
-                // Update sidebar with user info
                 Auth.updateSidebar();
             })
-            .catch(err => {
-                console.error(err);
+            .catch(() => {
                 document.getElementById('sidebar-container').innerHTML =
                     '<div style="color:#f33;padding:2rem;">Sidebar failed to load</div>';
             });
 
-        // ── Your fretboard logic (unchanged core, minor tweaks) ──
-        const TUNING = ['E', 'A', 'D', 'G', 'B', 'E'].reverse(); // high to low → low to high display
+        // ─────────────────────────────────────────────
+        // Fretboard core (unchanged)
+        // ─────────────────────────────────────────────
+        const TUNING = ['E', 'A', 'D', 'G', 'B', 'E'].reverse();
         const NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
         const FRETS = 13;
 
@@ -608,7 +142,6 @@
         function initFretboard() {
             const fb = document.getElementById('fretboard');
             fb.innerHTML = '';
-
             TUNING.forEach((open, strIdx) => {
                 const container = document.createElement('div');
                 container.className = 'string-container';
@@ -667,6 +200,7 @@
                 dot.classList.add('active');
             }
 
+            updatePlayBtn();
             updateChord();
         }
 
@@ -679,16 +213,13 @@
             }
 
             const result = await classifyPositions(positions);
-
             document.getElementById('chordName').textContent = result.chord_type || '-';
             document.getElementById('chordNotes').textContent = (result.notes || []).join(', ');
 
             const conf = Math.round((result.confidence || 0) * 100);
             const confEl = document.getElementById('confidenceValue');
             confEl.textContent = conf + '%';
-
-            confEl.style.color = conf >= 80 ? 'var(--spotify-green)' :
-                conf >= 60 ? '#ff9f1c' : '#ff4d4d';
+            confEl.style.color = conf >= 80 ? 'var(--spotify-green)' : conf >= 60 ? '#ff9f1c' : '#ff4d4d';
         }
 
         async function classifyPositions(pos) {
@@ -704,11 +235,7 @@
                 console.warn('API error, using fallback:', err);
                 const uniqueNotes = [...new Set(pos.map(([s, f]) => getNote(s, f)))];
                 const fb = fallbackClassify(uniqueNotes);
-                return {
-                    chord_type: fb.name,
-                    confidence: fb.conf,
-                    notes: uniqueNotes
-                };
+                return { chord_type: fb.name, confidence: fb.conf, notes: uniqueNotes };
             }
         }
 
@@ -721,22 +248,114 @@
                 { notes: ['E', 'G', 'B'], name: 'E Minor', conf: 0.95 },
                 { notes: ['G', 'B', 'D'], name: 'G Major', conf: 1.0 },
             ];
-
             for (const c of common) {
-                if (c.notes.every(n => set.has(n)) && set.size === c.notes.length) {
+                if (c.notes.every(n => set.has(n)) && set.size === c.notes.length)
                     return { name: c.name, conf: c.conf };
-                }
             }
-
             return {
                 name: notes.length >= 3 ? 'Unknown Chord' : notes.length === 2 ? 'Interval' : 'Single Note',
                 conf: notes.length >= 3 ? 0.5 : 0.8
             };
         }
 
+        // ─────────────────────────────────────────────
+        // Tone.js — Acoustic Guitar Sampler
+        // (exact same pattern as verified in audio_test.html Test 5)
+        // ─────────────────────────────────────────────
+
+        // Each string's base octave. TUNING reversed so index 0 = high E, index 5 = low E
+        const STRING_OCTAVES = [4, 3, 3, 3, 2, 2];
+
+        let sampler = null;
+        let samplerReady = false;
+
+        function updatePlayBtn() {
+            const btn = document.getElementById('playBtn');
+            if (!samplerReady) {
+                btn.textContent = '⏳ Loading guitar...';
+                btn.disabled = true;
+            } else if (positions.length === 0) {
+                btn.textContent = '▶ Play Chord';
+                btn.disabled = true;
+            } else {
+                btn.textContent = '▶ Play Chord';
+                btn.disabled = false;
+            }
+        }
+
+        function getNoteWithOctave(strIdx, fret) {
+            const baseIdx = NOTES.indexOf(TUNING[strIdx]);
+            const semitones = baseIdx + fret;
+            const noteIdx = semitones % 12;
+            const extraOct = Math.floor(semitones / 12);
+            const octave = STRING_OCTAVES[strIdx] + extraOct;
+            // Tone.js triggerAttackRelease accepts standard sharp notation e.g. "F#3"
+            return NOTES[noteIdx] + octave;
+        }
+
+        function initSampler() {
+            updatePlayBtn();
+
+            // Keys MUST be in Tone.js format (e.g. "F#2" not "Fs2")
+            // but the actual filenames on the server use "s" for sharp (e.g. Fs2.mp3)
+            // So we map Tone.js key → actual filename
+            sampler = new Tone.Sampler({
+                urls: {
+                    'E2': 'E2.mp3',
+                    'F#2': 'Fs2.mp3',
+                    'A2': 'A2.mp3',
+                    'C#3': 'Cs3.mp3',
+                    'E3': 'E3.mp3',
+                    'G3': 'G3.mp3',
+                    'A3': 'A3.mp3',
+                    'C#4': 'Cs4.mp3',
+                    'E4': 'E4.mp3',
+                    'G4': 'G4.mp3',
+                    'A4': 'A4.mp3',
+                },
+                baseUrl: 'https://nbrosowsky.github.io/tonejs-instruments/samples/guitar-acoustic/',
+                onload: () => {
+                    samplerReady = true;
+                    updatePlayBtn();
+                    console.log('✅ Guitar sampler loaded');
+                },
+                onerror: (e) => {
+                    console.error('❌ Sampler error:', e);
+                }
+            }).toDestination();
+        }
+
+        async function playChord() {
+            if (!samplerReady || positions.length === 0) return;
+
+            await Tone.start();
+
+            const btn = document.getElementById('playBtn');
+            btn.textContent = '♪ Playing...';
+            btn.disabled = true;
+
+            const played = new Set();
+            const notes = [];
+
+            positions.forEach(([strIdx, fret]) => {
+                const n = getNoteWithOctave(strIdx, fret);
+                if (!played.has(n)) {
+                    played.add(n);
+                    notes.push(n);
+                }
+            });
+
+            console.log('Playing notes:', notes);
+            sampler.triggerAttackRelease(notes, '2n');
+
+            setTimeout(() => updatePlayBtn(), 2000);
+        }
+
         // Init
         window.addEventListener('DOMContentLoaded', () => {
             initFretboard();
+            console.log('🎸 Initialising guitar sampler...');
+            initSampler();
         });
     </script>
 </body>
