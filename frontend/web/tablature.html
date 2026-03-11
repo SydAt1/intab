@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Audio to Tablature | Tablature Intelligence</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="css/tablature.css">
+</head>
+
+<body>
+
+    <header class="header">
+        <div class="header-title">Tablature Intelligence — Audio Transcription</div>
+    </header>
+
+    <div class="app-container">
+        <aside id="sidebar-container"></aside>
+        <main class="main-content">
+            <div class="workspace">
+
+                <!-- LEFT PANEL -->
+                <div class="panel panel-input">
+
+                    <!-- Upload Zone -->
+                    <div class="section-card">
+                        <div class="section-header">
+                            <span class="section-icon">↑</span>
+                            <div>
+                                <h2 class="section-title">Audio File Input</h2>
+                                <p class="section-subtitle">MP3, WAV, FLAC, OGG — max 50MB</p>
+                            </div>
+                        </div>
+
+                        <div class="drop-zone" id="dropZone">
+                            <div class="drop-zone-icon">
+                                <svg width="52" height="52" viewBox="0 0 52 52" fill="none">
+                                    <rect x="8" y="6" width="28" height="36" rx="4" stroke="#535353" stroke-width="2" />
+                                    <path d="M28 6v10h10" stroke="#535353" stroke-width="2" />
+                                    <circle cx="38" cy="38" r="10" fill="#1DB954" />
+                                    <path d="M34 38h8M38 34v8" stroke="#000" stroke-width="2.5"
+                                        stroke-linecap="round" />
+                                    <path d="M15 24h14M15 29h10" stroke="#535353" stroke-width="1.5"
+                                        stroke-linecap="round" />
+                                </svg>
+                            </div>
+                            <p class="drop-zone-text">Drop audio file here or click to browse</p>
+                            <p class="drop-zone-sub">Supported: MP3, WAV, OGG, FLAC</p>
+                            <button class="btn-select" onclick="document.getElementById('fileInput').click()">Select
+                                File</button>
+                            <input type="file" id="fileInput" accept="audio/*" hidden />
+                        </div>
+
+                        <!-- File Preview -->
+                        <div class="file-preview" id="filePreview" style="display:none">
+                            <div class="file-icon">♫</div>
+                            <div class="file-meta">
+                                <div class="file-name" id="fileName">—</div>
+                                <div class="file-size" id="fileSize">—</div>
+                            </div>
+                            <button class="btn-icon" id="previewPlayBtn" title="Preview audio">▶</button>
+                            <audio id="audioPreview" style="display:none"></audio>
+                        </div>
+                    </div>
+
+                    <!-- ═ APPLE TRIM SELECTOR ═ -->
+                    <div class="section-card" id="trimCard" style="display:none">
+                        <div class="section-header">
+                            <span class="section-icon">✂</span>
+                            <div>
+                                <h2 class="section-title">Select Portion</h2>
+                                <p class="section-subtitle">Drag handles to trim the section to transcribe</p>
+                            </div>
+                        </div>
+
+                        <div class="trim-section">
+                            <div class="trim-container" id="trimContainer">
+                                <canvas id="waveformCanvas"></canvas>
+                                <!-- dark overlay left of selection -->
+                                <div class="trim-outside-left" id="trimOutsideLeft"></div>
+                                <!-- dark overlay right of selection -->
+                                <div class="trim-outside-right" id="trimOutsideRight"></div>
+                                <!-- yellow frame -->
+                                <div class="trim-overlay" id="trimOverlay"></div>
+                                <!-- duration pill -->
+                                <div class="trim-duration-tag" id="trimDurationTag">0:30</div>
+                                <!-- playhead -->
+                                <div class="trim-playhead" id="trimPlayhead" style="left: 0px;"></div>
+                                <!-- handles -->
+                                <div class="trim-handle trim-handle-left" id="handleLeft">
+                                    <div class="trim-handle-grip">
+                                        <span></span><span></span><span></span>
+                                    </div>
+                                </div>
+                                <div class="trim-handle trim-handle-right" id="handleRight">
+                                    <div class="trim-handle-grip">
+                                        <span></span><span></span><span></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="trim-time-row">
+                                <span class="trim-time-label" id="trimStartLabel">0:00</span>
+                                <span class="trim-time-selection" id="trimSelectionLabel">Selected: 0:00 → 0:00</span>
+                                <span class="trim-time-label" id="trimEndLabel">0:00</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab Name -->
+                    <div class="section-card">
+                        <div class="section-header">
+                            <span class="section-icon">✎</span>
+                            <div>
+                                <h2 class="section-title">Tablature Name</h2>
+                                <p class="section-subtitle">Optional — used for search &amp; history</p>
+                            </div>
+                        </div>
+                        <input type="text" id="tabNameInput" class="text-input"
+                            placeholder="e.g. Wonderwall intro, solo practice..." maxlength="100" />
+                    </div>
+
+                    <!-- Processing Settings -->
+                    <div class="section-card">
+                        <div class="section-header">
+                            <span class="section-icon">⚙</span>
+                            <div>
+                                <h2 class="section-title">Processing Settings</h2>
+                                <p class="section-subtitle">Configure before generating</p>
+                            </div>
+                        </div>
+                        <div class="settings-grid">
+                            <div class="setting-group">
+                                <label class="setting-label">Instrument Type</label>
+                                <div class="select-wrapper">
+                                    <select id="instrumentType" class="setting-select">
+                                        <option value="guitar_6">Guitar (6-string)</option>
+                                        <option value="guitar_7">Guitar (7-string)</option>
+                                        <option value="bass_4">Bass (4-string)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="setting-group">
+                                <label class="setting-label">Tuning</label>
+                                <div class="select-wrapper">
+                                    <select id="tuningSelect" class="setting-select">
+                                        <option value="standard">Standard (EADGBE)</option>
+                                        <option value="drop_d">Drop D (DADGBE)</option>
+                                        <option value="open_g">Open G (DGDGBD)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="action-row">
+                        <button class="btn-primary" id="uploadBtn" onclick="handleUpload()">
+                            <span id="uploadBtnText">↑ Upload Audio</span>
+                        </button>
+                        <button class="btn-transcribe" id="transcribeBtn" onclick="handleTranscribe()" disabled>
+                            <span id="transcribeBtnText">♪ Generate Tablature</span>
+                        </button>
+                        <button class="btn-ghost" onclick="handleReset()">Reset</button>
+                    </div>
+
+                    <!-- Status Bar -->
+                    <div class="status-bar" id="statusBar" style="display:none">
+                        <div class="status-indicator" id="statusIndicator"></div>
+                        <span class="status-text" id="statusText"></span>
+                    </div>
+                </div>
+
+                <!-- RIGHT PANEL -->
+                <div class="panel panel-output">
+                    <div class="section-card output-card">
+                        <div class="section-header">
+                            <span class="section-icon">♩</span>
+                            <div>
+                                <h2 class="section-title">Generated Tablature</h2>
+                                <p class="section-subtitle" id="tabSubtitle">Upload and process an audio file to see
+                                    results</p>
+                            </div>
+                            <div class="output-actions" id="outputActions" style="display:none">
+                                <button class="btn-sm" id="editBtn" onclick="toggleEdit()">✎ Edit</button>
+                                <button class="btn-sm btn-sm-green" onclick="exportTab()">↓ Export</button>
+                                <button class="btn-sm" onclick="handleRename()">Rename</button>
+                            </div>
+                        </div>
+
+                        <div class="output-empty" id="outputEmpty">
+                            <div class="empty-visual">
+                                <div class="tab-lines">
+                                    <div class="tab-line">E|<span>——————————————————————</span>|</div>
+                                    <div class="tab-line">B|<span>——————————————————————</span>|</div>
+                                    <div class="tab-line">G|<span>——————————————————————</span>|</div>
+                                    <div class="tab-line">D|<span>——————————————————————</span>|</div>
+                                    <div class="tab-line">A|<span>——————————————————————</span>|</div>
+                                    <div class="tab-line">E|<span>——————————————————————</span>|</div>
+                                </div>
+                                <p class="empty-hint">Your tablature will appear here</p>
+                            </div>
+                        </div>
+
+                        <div class="output-processing" id="outputProcessing" style="display:none">
+                            <div class="processing-animation">
+                                <div class="waveform">
+                                    <div class="bar"></div>
+                                    <div class="bar"></div>
+                                    <div class="bar"></div>
+                                    <div class="bar"></div>
+                                    <div class="bar"></div>
+                                    <div class="bar"></div>
+                                    <div class="bar"></div>
+                                    <div class="bar"></div>
+                                    <div class="bar"></div>
+                                </div>
+                                <p class="processing-text">Analysing audio with CRNN model...</p>
+                                <p class="processing-sub">This may take 15–60 seconds depending on file length</p>
+                            </div>
+                        </div>
+
+                        <div class="output-result" id="outputResult" style="display:none">
+                            <div class="result-audio-bar" id="resultAudioBar" style="display:none">
+                                <span class="audio-bar-icon">♫</span>
+                                <span class="audio-bar-name" id="resultFileName">—</span>
+                                <audio id="resultAudio" controls style="flex:1;height:32px;min-width:0;"></audio>
+                            </div>
+                            <div class="tab-display" id="tabDisplay">
+                                <pre class="tab-content" id="tabContent" contenteditable="false"></pre>
+                            </div>
+                            <div class="rename-bar" id="renameBar" style="display:none">
+                                <input type="text" id="renameInput" class="text-input" placeholder="New tab name..." />
+                                <button class="btn-sm btn-sm-green" onclick="submitRename()">Save</button>
+                                <button class="btn-sm" onclick="cancelRename()">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- History -->
+                    <div class="section-card history-card">
+                        <div class="section-header">
+                            <span class="section-icon">⏱</span>
+                            <div>
+                                <h2 class="section-title">My Transcriptions</h2>
+                                <p class="section-subtitle">Your upload history</p>
+                            </div>
+                            <div class="search-row">
+                                <input type="text" id="searchInput" class="search-input"
+                                    placeholder="Search by name or file..." oninput="handleSearch()" />
+                            </div>
+                        </div>
+                        <div class="history-list" id="historyList">
+                            <div class="history-empty">No transcriptions yet — upload your first audio file!</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // ═══════════════════════════════════════════════
+        //  STATE
+        // ═══════════════════════════════════════════════
+        let currentFile = null;
+        let currentAudioId = null;
+        let isEditing = false;
+        let audioBuffer = null;        // decoded AudioBuffer for waveform
+        let audioDuration = 0;         // seconds
+
+        // Trim state (0–1 normalized ratios)
+        let trimStart = 0;
+        let trimEnd = 1;
+
+        // ═══════════════════════════════════════════════
+        //  DROP ZONE
+        // ═══════════════════════════════════════════════
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+
+        dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+        dropZone.addEventListener('drop', e => {
+            e.preventDefault();
+            dropZone.classList.remove('drag-over');
+            const file = e.dataTransfer.files[0];
+            if (file) setFile(file);
+        });
+        fileInput.addEventListener('change', e => { if (e.target.files[0]) setFile(e.target.files[0]); });
+
+        async function setFile(file) {
+            currentFile = file;
+            document.getElementById('fileName').textContent = file.name;
+            document.getElementById('fileSize').textContent = formatBytes(file.size);
+            document.getElementById('filePreview').style.display = 'flex';
+            dropZone.classList.add('has-file');
+
+            const audio = document.getElementById('audioPreview');
+            audio.src = URL.createObjectURL(file);
+            document.getElementById('previewPlayBtn').onclick = () => {
+                audio.paused ? audio.play() : audio.pause();
+                document.getElementById('previewPlayBtn').textContent = audio.paused ? '▶' : '⏸';
+            };
+            audio.onended = () => { document.getElementById('previewPlayBtn').textContent = '▶'; };
+
+            showStatus('Loading waveform...', 'loading');
+            await decodeAndRenderWaveform(file);
+            showStatus('File ready — trim selection, then Upload Audio', 'idle');
+        }
+
+        // ═══════════════════════════════════════════════
+        //  WAVEFORM DECODE + DRAW
+        // ═══════════════════════════════════════════════
+        async function decodeAndRenderWaveform(file) {
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                audioBuffer = await ctx.decodeAudioData(arrayBuffer);
+                audioDuration = audioBuffer.duration;
+
+                // Reset trim to full
+                trimStart = 0;
+                trimEnd = 1;
+
+                drawWaveform();
+                document.getElementById('trimCard').style.display = 'block';
+                initTrimHandles();
+                updateTrimUI();
+            } catch (e) {
+                console.warn('Waveform decode failed', e);
+                // Still show trim card with flat line
+                audioDuration = 0;
+                document.getElementById('trimCard').style.display = 'block';
+                initTrimHandles();
+                updateTrimUI();
+            }
+        }
+
+        function drawWaveform() {
+            const canvas = document.getElementById('waveformCanvas');
+            const container = document.getElementById('trimContainer');
+            const W = container.clientWidth || 600;
+            const H = 72;
+            canvas.width = W;
+            canvas.height = H;
+
+            const dctx = canvas.getContext('2d');
+            dctx.clearRect(0, 0, W, H);
+
+            if (!audioBuffer) {
+                // flat line fallback
+                dctx.strokeStyle = '#333';
+                dctx.beginPath();
+                dctx.moveTo(0, H / 2);
+                dctx.lineTo(W, H / 2);
+                dctx.stroke();
+                return;
+            }
+
+            const data = audioBuffer.getChannelData(0);
+            const step = Math.ceil(data.length / W);
+            const amp = H / 2;
+
+            // Draw bars
+            for (let x = 0; x < W; x++) {
+                let min = 1, max = -1;
+                for (let j = 0; j < step; j++) {
+                    const val = data[x * step + j] || 0;
+                    if (val < min) min = val;
+                    if (val > max) max = val;
+                }
+                // color varies subtly
+                const intensity = Math.min(1, (max - min) * 1.2);
+                const g = Math.round(100 + intensity * 85);
+                dctx.fillStyle = `rgb(20,${g},60)`;
+                const barH = Math.max(1, (max - min) * amp);
+                dctx.fillRect(x, amp - barH / 2, 1, barH);
+            }
+        }
+
+        // ═══════════════════════════════════════════════
+        //  TRIM HANDLES — Apple iOS-style
+        // ═══════════════════════════════════════════════
+        const HANDLE_W = 22; // px, must match CSS
+
+        function initTrimHandles() {
+            const left = document.getElementById('handleLeft');
+            const right = document.getElementById('handleRight');
+
+            makeDraggable(left, 'left');
+            makeDraggable(right, 'right');
+
+            // Click inside trim zone to seek playhead
+            document.getElementById('trimContainer').addEventListener('mousedown', onContainerClick);
+        }
+
+        function makeDraggable(el, side) {
+            let startX, startRatio;
+
+            const onMove = (e) => {
+                const container = document.getElementById('trimContainer');
+                const rect = container.getBoundingClientRect();
+                const usableW = rect.width - HANDLE_W * 2;
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const x = clientX - rect.left - HANDLE_W; // offset for left handle width
+                let ratio = x / usableW;
+                ratio = Math.max(0, Math.min(1, ratio));
+
+                const MIN_SEL = 0.02; // at least 2% of track
+
+                if (side === 'left') {
+                    trimStart = Math.min(ratio, trimEnd - MIN_SEL);
+                } else {
+                    trimEnd = Math.max(ratio, trimStart + MIN_SEL);
+                }
+                updateTrimUI();
+            };
+
+            const onUp = () => {
+                window.removeEventListener('mousemove', onMove);
+                window.removeEventListener('mouseup', onUp);
+                window.removeEventListener('touchmove', onMove);
+                window.removeEventListener('touchend', onUp);
+            };
+
+            el.addEventListener('mousedown', (e) => {
+                e.stopPropagation();
+                window.addEventListener('mousemove', onMove);
+                window.addEventListener('mouseup', onUp);
+            });
+            el.addEventListener('touchstart', (e) => {
+                e.stopPropagation();
+                window.addEventListener('touchmove', onMove, { passive: true });
+                window.addEventListener('touchend', onUp);
+            }, { passive: true });
+        }
+
+        function onContainerClick(e) {
+            // Only move playhead if clicking inside the selection zone (not handles)
+            if (e.target.classList.contains('trim-handle') || e.target.closest('.trim-handle')) return;
+            const container = document.getElementById('trimContainer');
+            const rect = container.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const ratio = x / rect.width;
+            movePlayhead(ratio);
+        }
+
+        function movePlayhead(ratio) {
+            ratio = Math.max(0, Math.min(1, ratio));
+            const container = document.getElementById('trimContainer');
+            const px = ratio * container.clientWidth;
+            document.getElementById('trimPlayhead').style.left = px + 'px';
+        }
+
+        function updateTrimUI() {
+            const container = document.getElementById('trimContainer');
+            const W = container.clientWidth;
+            const usableW = W - HANDLE_W * 2;
+
+            // Handle positions
+            const leftPx = trimStart * usableW;             // left handle left edge (in usable zone)
+            const rightPx = trimEnd * usableW + HANDLE_W;   // right handle left edge
+
+            const handleLeft = document.getElementById('handleLeft');
+            const handleRight = document.getElementById('handleRight');
+            handleLeft.style.left = leftPx + 'px';
+            handleRight.style.left = rightPx + 'px';
+
+            // Yellow overlay frame (between handles)
+            const overlay = document.getElementById('trimOverlay');
+            const overlayLeft = leftPx + HANDLE_W;
+            const overlayRight = W - rightPx - HANDLE_W;
+            overlay.style.left = overlayLeft + 'px';
+            overlay.style.right = overlayRight + 'px';
+
+            // Dark outside regions
+            document.getElementById('trimOutsideLeft').style.left = '0px';
+            document.getElementById('trimOutsideLeft').style.width = leftPx + 'px';
+            document.getElementById('trimOutsideRight').style.right = '0px';
+            document.getElementById('trimOutsideRight').style.width = (W - rightPx - HANDLE_W) + 'px';
+
+            // Duration pill
+            const selSec = (trimEnd - trimStart) * audioDuration;
+            const durTag = document.getElementById('trimDurationTag');
+            const midPx = leftPx + HANDLE_W + (rightPx - leftPx) / 2;
+            durTag.style.left = midPx + 'px';
+            durTag.textContent = formatTime(selSec);
+            durTag.style.opacity = (trimEnd - trimStart > 0.08) ? '1' : '0';
+
+            // Time labels
+            document.getElementById('trimStartLabel').textContent = formatTime(0);
+            document.getElementById('trimEndLabel').textContent = formatTime(audioDuration);
+            const selStart = trimStart * audioDuration;
+            const selEnd = trimEnd * audioDuration;
+            document.getElementById('trimSelectionLabel').textContent =
+                `Selected: ${formatTime(selStart)} → ${formatTime(selEnd)}`;
+        }
+
+        // ═══════════════════════════════════════════════
+        //  HELPERS
+        // ═══════════════════════════════════════════════
+        function formatTime(sec) {
+            if (!sec || isNaN(sec)) return '0:00';
+            const m = Math.floor(sec / 60);
+            const s = Math.floor(sec % 60);
+            return `${m}:${s.toString().padStart(2, '0')}`;
+        }
+
+        function formatBytes(bytes) {
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+
+        function showStatus(msg, type) {
+            const bar = document.getElementById('statusBar');
+            bar.style.display = 'flex';
+            document.getElementById('statusText').textContent = msg;
+            document.getElementById('statusIndicator').className = 'status-indicator ' + type;
+        }
+        function hideStatus() { document.getElementById('statusBar').style.display = 'none'; }
+
+        // Redraw on resize
+        window.addEventListener('resize', () => {
+            if (audioBuffer) drawWaveform();
+            updateTrimUI();
+        });
+
+        // ═══════════════════════════════════════════════
+        //  UPLOAD — includes trim timestamps
+        // ═══════════════════════════════════════════════
+        async function handleUpload() {
+            if (!currentFile) { showStatus('Please select an audio file first', 'error'); return; }
+
+            const btn = document.getElementById('uploadBtn');
+            const btnText = document.getElementById('uploadBtnText');
+            btn.disabled = true;
+            btnText.textContent = '↑ Uploading...';
+            showStatus('Uploading to storage...', 'loading');
+
+            const formData = new FormData();
+            formData.append('file', currentFile);
+            const tabName = document.getElementById('tabNameInput').value.trim();
+            if (tabName) formData.append('tab_name', tabName);
+
+            // Send trim timestamps in seconds to the backend
+            if (audioDuration > 0) {
+                formData.append('trim_start', (trimStart * audioDuration).toFixed(3));
+                formData.append('trim_end', (trimEnd * audioDuration).toFixed(3));
+            }
+
+            try {
+                const token = (typeof Auth !== 'undefined' && Auth.getToken?.()) || localStorage.getItem('access_token') || '';
+                const res = await fetch('/api/audio/upload', {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + token },
+                    body: formData
+                });
+                if (!res.ok) throw new Error(await res.text());
+                const data = await res.json();
+                currentAudioId = data.id;
+
+                showStatus('Upload complete — click Generate Tablature', 'success');
+                document.getElementById('transcribeBtn').disabled = false;
+                btnText.textContent = '✓ Uploaded';
+                loadHistory();
+            } catch (err) {
+                showStatus('Upload failed: ' + err.message, 'error');
+                btn.disabled = false;
+                btnText.textContent = '↑ Upload Audio';
+            }
+        }
+
+        // ═══════════════════════════════════════════════
+        //  TRANSCRIBE / POLL
+        // ═══════════════════════════════════════════════
+        async function handleTranscribe() {
+            if (!currentAudioId) return;
+            const btn = document.getElementById('transcribeBtn');
+            btn.disabled = true;
+            document.getElementById('transcribeBtnText').textContent = '⏳ Processing...';
+            showStatus('Running CRNN model — please wait...', 'loading');
+
+            document.getElementById('outputEmpty').style.display = 'none';
+            document.getElementById('outputProcessing').style.display = 'flex';
+            document.getElementById('outputResult').style.display = 'none';
+
+            try {
+                const token = (typeof Auth !== 'undefined' && Auth.getToken?.()) || localStorage.getItem('access_token') || '';
+                const res = await fetch(`/api/audio/${currentAudioId}/transcribe`, {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                if (!res.ok) throw new Error(await res.text());
+                await pollResult(currentAudioId);
+            } catch (err) {
+                showStatus('Transcription failed: ' + err.message, 'error');
+                document.getElementById('outputProcessing').style.display = 'none';
+                document.getElementById('outputEmpty').style.display = 'flex';
+                btn.disabled = false;
+                document.getElementById('transcribeBtnText').textContent = '♪ Generate Tablature';
+            }
+        }
+
+        async function pollResult(audioId) {
+            const token = (typeof Auth !== 'undefined' && Auth.getToken?.()) || localStorage.getItem('access_token') || '';
+            for (let i = 0; i < 30; i++) {
+                await new Promise(r => setTimeout(r, 3000));
+                const res = await fetch(`/api/audio/${audioId}/result`, { headers: { 'Authorization': 'Bearer ' + token } });
+                const data = await res.json();
+                if (data.status === 'done') { showResult(data); loadHistory(); return; }
+                if (data.status === 'failed') throw new Error('Transcription failed on server');
+            }
+            throw new Error('Timed out waiting for result');
+        }
+
+        function showResult(data) {
+            document.getElementById('outputProcessing').style.display = 'none';
+            document.getElementById('outputResult').style.display = 'block';
+            document.getElementById('outputEmpty').style.display = 'none';
+            document.getElementById('outputActions').style.display = 'flex';
+            document.getElementById('tabSubtitle').textContent = data.tab_name || 'Transcription complete';
+            document.getElementById('tabContent').textContent = data.tab_content || '(No tablature generated)';
+            if (data.audio_url) {
+                document.getElementById('resultAudioBar').style.display = 'flex';
+                document.getElementById('resultFileName').textContent = currentFile?.name || 'Audio';
+                document.getElementById('resultAudio').src = data.audio_url;
+            }
+            showStatus('Tablature generated successfully', 'success');
+        }
+
+        // ═══════════════════════════════════════════════
+        //  EDIT / EXPORT / RENAME
+        // ═══════════════════════════════════════════════
+        function toggleEdit() {
+            isEditing = !isEditing;
+            const content = document.getElementById('tabContent');
+            content.contentEditable = isEditing ? 'true' : 'false';
+            content.classList.toggle('editing', isEditing);
+            document.getElementById('editBtn').textContent = isEditing ? '✓ Done' : '✎ Edit';
+            if (isEditing) content.focus();
+        }
+
+        function exportTab() {
+            const content = document.getElementById('tabContent').textContent;
+            const name = document.getElementById('tabSubtitle').textContent || 'tablature';
+            const blob = new Blob([content], { type: 'text/plain' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = name.replace(/[^a-z0-9]/gi, '_') + '.txt';
+            a.click();
+        }
+
+        function handleRename() {
+            document.getElementById('renameBar').style.display = 'flex';
+            document.getElementById('renameInput').value = document.getElementById('tabSubtitle').textContent;
+            document.getElementById('renameInput').focus();
+        }
+
+        async function submitRename() {
+            const newName = document.getElementById('renameInput').value.trim();
+            if (!newName || !currentAudioId) return;
+            const token = (typeof Auth !== 'undefined' && Auth.getToken?.()) || localStorage.getItem('access_token') || '';
+            try {
+                await fetch(`/api/audio/${currentAudioId}/rename`, {
+                    method: 'PATCH',
+                    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ tab_name: newName })
+                });
+                document.getElementById('tabSubtitle').textContent = newName;
+                cancelRename();
+                loadHistory();
+            } catch (e) { showStatus('Rename failed', 'error'); }
+        }
+
+        function cancelRename() { document.getElementById('renameBar').style.display = 'none'; }
+
+        // ═══════════════════════════════════════════════
+        //  HISTORY
+        // ═══════════════════════════════════════════════
+        async function loadHistory() {
+            const token = (typeof Auth !== 'undefined' && Auth.getToken?.()) || localStorage.getItem('access_token') || '';
+            try {
+                const res = await fetch('/api/audio/my-uploads', { headers: { 'Authorization': 'Bearer ' + token } });
+                renderHistory(await res.json());
+            } catch (e) { }
+        }
+
+        function renderHistory(items) {
+            const list = document.getElementById('historyList');
+            if (!items || items.length === 0) {
+                list.innerHTML = '<div class="history-empty">No transcriptions yet — upload your first audio file!</div>';
+                return;
+            }
+            list.innerHTML = items.map(item => `
+            <div class="history-item" onclick="loadHistoryItem('${item.id}')">
+                <div class="history-item-icon">♫</div>
+                <div class="history-item-info">
+                    <div class="history-item-name">${item.tab_name || item.original_filename}</div>
+                    <div class="history-item-meta">${item.original_filename} · ${formatDate(item.uploaded_at)}</div>
+                </div>
+                <div class="history-item-status status-${item.status}">${item.status}</div>
+            </div>
+        `).join('');
+        }
+
+        async function loadHistoryItem(audioId) {
+            const token = (typeof Auth !== 'undefined' && Auth.getToken?.()) || localStorage.getItem('access_token') || '';
+            currentAudioId = audioId;
+            try {
+                const res = await fetch(`/api/audio/${audioId}/result`, { headers: { 'Authorization': 'Bearer ' + token } });
+                const data = await res.json();
+                if (data.status === 'done') showResult(data);
+                else showStatus(`Status: ${data.status}`, 'idle');
+            } catch (e) { showStatus('Failed to load item', 'error'); }
+        }
+
+        async function handleSearch() {
+            const q = document.getElementById('searchInput').value.trim();
+            if (!q) { loadHistory(); return; }
+            const token = (typeof Auth !== 'undefined' && Auth.getToken?.()) || localStorage.getItem('access_token') || '';
+            try {
+                const res = await fetch(`/api/audio/search?name=${encodeURIComponent(q)}&filename=${encodeURIComponent(q)}`, {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                renderHistory(await res.json());
+            } catch (e) { }
+        }
+
+        function formatDate(iso) {
+            if (!iso) return '—';
+            return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+        }
+
+        // ═══════════════════════════════════════════════
+        //  RESET
+        // ═══════════════════════════════════════════════
+        function handleReset() {
+            currentFile = null; currentAudioId = null; isEditing = false;
+            audioBuffer = null; audioDuration = 0; trimStart = 0; trimEnd = 1;
+            fileInput.value = '';
+            document.getElementById('filePreview').style.display = 'none';
+            document.getElementById('tabNameInput').value = '';
+            document.getElementById('transcribeBtn').disabled = true;
+            document.getElementById('uploadBtnText').textContent = '↑ Upload Audio';
+            document.getElementById('uploadBtn').disabled = false;
+            document.getElementById('transcribeBtnText').textContent = '♪ Generate Tablature';
+            dropZone.classList.remove('has-file');
+            document.getElementById('outputEmpty').style.display = 'flex';
+            document.getElementById('outputProcessing').style.display = 'none';
+            document.getElementById('outputResult').style.display = 'none';
+            document.getElementById('outputActions').style.display = 'none';
+            document.getElementById('renameBar').style.display = 'none';
+            document.getElementById('tabSubtitle').textContent = 'Upload and process an audio file to see results';
+            document.getElementById('trimCard').style.display = 'none';
+            hideStatus();
+        }
+
+        // ── Init ──
+        window.addEventListener('DOMContentLoaded', () => { loadHistory(); });
+    </script>
+
+    <!-- Authentication Script - Must be loaded first -->
+    <script src="/static/js/auth.js"></script>
+
+    <script src="/static/js/sidenav.js"></script>
+</body>
+
+</html>

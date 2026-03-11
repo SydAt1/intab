@@ -28,6 +28,8 @@ MAX_FILE_SIZE = 50 * 1024 * 1024  # 50 MB
 async def upload_audio_file(
     file: UploadFile = File(...),
     tab_name: Optional[str] = Form(None),
+    trim_start: Optional[float] = Form(None),
+    trim_end: Optional[float] = Form(None),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -44,6 +46,34 @@ async def upload_audio_file(
     
     if file_size > MAX_FILE_SIZE:
         raise HTTPException(status_code=400, detail="File too large. Maximum size is 50MB.")
+        
+    # Trim audio if timestamps are provided
+    if trim_start is not None and trim_end is not None:
+        try:
+            import librosa
+            import soundfile as sf
+            from io import BytesIO
+            
+            # Load audio from bytes
+            y, sr = librosa.load(BytesIO(file_bytes), sr=22050)
+            
+            # Convert timestamps to samples
+            start_sample = int(trim_start * sr)
+            end_sample = int(trim_end * sr)
+            
+            # Slice audio
+            y_trimmed = y[start_sample:end_sample]
+            
+            # Write back to bytes
+            out_io = BytesIO()
+            sf.write(out_io, y_trimmed, sr, format='WAV')
+            file_bytes = out_io.getvalue()
+            file_size = len(file_bytes)
+            
+            # Always extension .wav after processing
+            file.filename = os.path.splitext(file.filename)[0] + ".wav"
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Failed to trim audio: {str(e)}")
         
     # Generate unique ID, filename, and storage key
     file_id = str(uuid.uuid4())
@@ -138,6 +168,22 @@ async def transcribe_audio_file(
         # Do the actual transcription using CRNN model logic
         notes = transcribe_audio(processed_path)
         
+        # --- NEW CODE: Upload isolated guitar stem back to MinIO ---
+        base_key, ext = os.path.splitext(audio_record.storage_key)
+        new_storage_key = f"{base_key}_processed{ext}"
+        
+        with open(processed_path, "rb") as f:
+            processed_bytes = f.read()
+            
+        # Determine content type (usually wav since process_upload forces it)
+        content_type = "audio/wav" if processed_path.endswith(".wav") else "audio/mpeg"
+        
+        minio_client.upload_audio(processed_bytes, new_storage_key, content_type)
+        
+        # Update audio_record to point to the processed audio
+        audio_record.storage_key = new_storage_key
+        # --- END NEW CODE ---
+        
         # Convert notes to tab
         ascii_tab = generate_ascii_tab(notes)
         
@@ -173,7 +219,8 @@ async def transcribe_audio_file(
         if processed_path and os.path.exists(processed_path):
             os.remove(processed_path)
         if os.path.exists(temp_dir):
-            os.rmdir(temp_dir)
+            import shutil
+            shutil.rmtree(temp_dir, ignore_errors=True)
 
 @router.patch("/{audio_id}/rename")
 async def rename_audio_file(
