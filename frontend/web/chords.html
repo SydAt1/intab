@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>InTab – Chord Visualizer</title>
-  <link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/chords.css" />
 </head>
 <body>
@@ -241,22 +241,7 @@ function hideLoading() {
 }
 
 // ── Auth ───────────────────────────────────────────────────────────────────
-async function ensureAuth() {
-  const stored = localStorage.getItem('intab_token');
-  if (stored) { authToken = stored; return; }
-  try {
-    const res = await fetch(`${API_BASE}/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: 'demo', password: 'demo' })
-    });
-    if (res.ok) {
-      const data = await res.json();
-      authToken = data.access_token;
-      localStorage.setItem('intab_token', authToken);
-    }
-  } catch {}
-}
+// Authentication natively handled by /static/js/auth.js
 
 // ── File input ─────────────────────────────────────────────────────────────
 const fileInput  = document.getElementById('fileInput');
@@ -575,7 +560,7 @@ function drawFretboard(root, quality) {
     });
   }
   ctx.fillStyle = '#ffffff60';
-  ctx.font = 'bold 11px Clash Display, sans-serif';
+  ctx.font = 'bold 11px Figtree, sans-serif';
   ctx.textAlign = 'center';
   ctx.fillText(label === '–' ? '' : label, W / 2, 12);
 }
@@ -649,7 +634,6 @@ function setCurrentChord(idx) {
 
 // ── Init ───────────────────────────────────────────────────────────────────
 (async () => {
-  await ensureAuth();
   await loadHistory();
 })();
 </script>
