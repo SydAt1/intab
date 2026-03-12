@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>InTab – Chord Visualizer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/chords.css" />
+</head>
+<body>
+
+<!-- Loading overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loadingText">Analyzing chords…</div>
+</div>
+
+<!-- Toast notification -->
+<div class="toast" id="toast"></div>
+
+<div class="app">
+  <aside id="sidebar-container"></aside>
+  
+  <div class="app-container">
+  <!-- Header -->
+  <header>
+    <div class="logo">
+      <div class="logo-dot"></div>
+      InTab
+    </div>
+  </header>
+
+  <div class="main">
+
+    <!-- Chords Panel -->
+    <aside class="chords-panel">
+
+      <!-- Upload -->
+      <div>
+        <div class="sidebar-section-label">Upload Audio</div>
+        <div class="upload-zone" id="uploadZone">
+          <input type="file" id="fileInput" accept="audio/*" />
+          <div class="upload-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+          </div>
+          <div class="upload-label" id="uploadLabel">
+            <strong>Drop a file here</strong><br>
+            or click to browse<br>
+            <small style="opacity:.6">MP3, WAV, FLAC, OGG up to 50MB</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab name -->
+      <div class="input-group">
+        <label>Tab Name (optional)</label>
+        <input type="text" id="tabName" placeholder="My Song" />
+      </div>
+
+      <!-- Analyze -->
+      <button class="btn-analyze" id="analyzeBtn" disabled>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="m21 21-4.35-4.35"/>
+        </svg>
+        Analyze Chords
+      </button>
+
+      <!-- History -->
+      <div style="flex:1; overflow-y:auto;">
+        <div class="sidebar-section-label">My Tabs</div>
+        <div class="history-list" id="historyList">
+          <div style="font-size:12px; color:var(--muted); text-align:center; padding:20px 0;">
+            No tabs yet
+          </div>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- Main content -->
+    <main class="content" id="mainContent">
+
+      <!-- Empty state -->
+      <div class="empty-state" id="emptyState">
+        <div class="empty-icon">🎸</div>
+        <h2>No track loaded</h2>
+        <p>Upload an audio file and analyze it to see chords appear in real time as your track plays.</p>
+      </div>
+
+      <!-- Player UI (hidden until a track is loaded) -->
+      <div id="playerUI" style="display:none; flex-direction:column; gap:24px;">
+
+        <!-- Now Playing -->
+        <div class="now-playing-card">
+          <div class="album-art">🎵</div>
+          <div class="track-info">
+            <div class="track-name" id="trackName">–</div>
+            <div class="track-meta" id="trackMeta">–</div>
+            <div class="track-stats">
+              <div class="stat">Chords <span id="statChords">–</span></div>
+              <div class="stat">Duration <span id="statDuration">–</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fretboard + Current chord hero -->
+        <div class="chord-diagram-section">
+          <div class="fretboard-wrap">
+            <div class="fretboard-label">Fretboard</div>
+            <canvas id="fretboard" width="120" height="150"></canvas>
+          </div>
+          <div class="current-chord-display">
+            <div class="current-chord-label">Now Playing</div>
+            <div class="current-chord-name" id="currentChordName">–</div>
+            <div class="current-chord-quality" id="currentChordQuality"></div>
+            <div class="next-chord-hint" id="nextChordHint" style="display:none">
+              <span>Next</span>
+              <span class="arrow">→</span>
+              <span class="next-name" id="nextChordName"></span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- All chords scroll -->
+        <div class="chord-section">
+          <div class="section-header">
+            <div class="section-title">All Chords</div>
+            <div class="badge" id="chordCountBadge">0 chords</div>
+          </div>
+          <div class="chord-timeline-wrap">
+            <div class="chord-timeline-header">
+              <div class="pulse-dot" id="pulseDot"></div>
+              Chord progression
+            </div>
+            <div class="chord-scroll" id="chordScroll"></div>
+          </div>
+        </div>
+
+        <!-- Waveform / timeline seek -->
+        <div class="waveform-section">
+          <div style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:1px;">Timeline</span>
+            <span style="font-family:'DM Mono',monospace; font-size:12px; color:var(--muted);" id="timeDisplay">0:00 / 0:00</span>
+          </div>
+          <div class="waveform-canvas-wrap">
+            <canvas id="waveform" height="64"></canvas>
+            <div class="waveform-progress-overlay" id="waveformOverlay"></div>
+          </div>
+        </div>
+
+        <!-- Player controls -->
+        <div class="player-section">
+          <div class="player-controls">
+            <button class="btn-play" id="playBtn">
+              <svg viewBox="0 0 24 24" id="playIcon"><polygon points="5,3 19,12 5,21"/></svg>
+            </button>
+            <div class="time-display" id="playerTime">0:00</div>
+            <div class="progress-container" id="progressContainer">
+              <div class="progress-track">
+                <div class="progress-fill" id="progressFill"></div>
+              </div>
+              <div class="progress-thumb" id="progressThumb"></div>
+            </div>
+            <div class="volume-control">
+              <svg class="volume-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+              </svg>
+              <input type="range" class="volume-slider" id="volumeSlider" min="0" max="1" step="0.01" value="0.8" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Chord map (segment bar) -->
+        <div class="segment-bar-wrap">
+          <div style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:1px;">Chord Map</span>
+          </div>
+          <div class="segment-bar" id="segmentBar">
+            <div class="segment-needle" id="segmentNeedle"></div>
+          </div>
+        </div>
+
+      </div><!-- /playerUI -->
+    </main>
+
+  </div><!-- /main -->
+  </div><!-- /app-container -->
+</div><!-- /app -->
+
+<script>
+// ── Config ─────────────────────────────────────────────────────────────────
+const API_BASE = 'http://localhost:8000/api';
+
+// ── State ──────────────────────────────────────────────────────────────────
+let authToken      = null;
+let currentChords  = [];
+let currentDuration = 0;
+let audioEl        = null;
+let animFrame      = null;
+let selectedFile   = null;
+let history        = [];
+let activeHistoryId = null;
+let lastChordIdx   = -1;
+
+// ── Chord colours ──────────────────────────────────────────────────────────
+const CHORD_COLORS = [
+  '#1db954','#2d9cdb','#9b59b6','#e67e22',
+  '#e74c3c','#1abc9c','#f39c12','#3498db',
+  '#8e44ad','#16a085','#d35400','#2980b9',
+];
+const chordColorMap = {};
+let colorIdx = 0;
+function colorForChord(label) {
+  if (!chordColorMap[label]) chordColorMap[label] = CHORD_COLORS[colorIdx++ % CHORD_COLORS.length];
+  return chordColorMap[label];
+}
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+function fmt(s) {
+  const m = Math.floor(s / 60), sec = Math.floor(s % 60);
+  return `${m}:${sec.toString().padStart(2, '0')}`;
+}
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast show ${type}`;
+  setTimeout(() => t.className = 'toast', 3500);
+}
+function showLoading(msg = 'Analyzing chords…') {
+  document.getElementById('loadingText').textContent = msg;
+  document.getElementById('loadingOverlay').classList.add('show');
+}
+function hideLoading() {
+  document.getElementById('loadingOverlay').classList.remove('show');
+}
+
+// ── Auth ───────────────────────────────────────────────────────────────────
+async function ensureAuth() {
+  const stored = localStorage.getItem('intab_token');
+  if (stored) { authToken = stored; return; }
+  try {
+    const res = await fetch(`${API_BASE}/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: 'demo', password: 'demo' })
+    });
+    if (res.ok) {
+      const data = await res.json();
+      authToken = data.access_token;
+      localStorage.setItem('intab_token', authToken);
+    }
+  } catch {}
+}
+
+// ── File input ─────────────────────────────────────────────────────────────
+const fileInput  = document.getElementById('fileInput');
+const uploadZone = document.getElementById('uploadZone');
+const uploadLabel = document.getElementById('uploadLabel');
+const analyzeBtn = document.getElementById('analyzeBtn');
+
+fileInput.addEventListener('change', e => {
+  const f = e.target.files[0];
+  if (!f) return;
+  selectedFile = f;
+  uploadLabel.innerHTML = `<strong>${f.name}</strong><br><small style="opacity:.6">${(f.size/1024/1024).toFixed(1)} MB</small>`;
+  analyzeBtn.disabled = false;
+});
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
+uploadZone.addEventListener('drop', e => {
+  e.preventDefault();
+  uploadZone.classList.remove('drag-over');
+  const f = e.dataTransfer.files[0];
+  if (!f) return;
+  selectedFile = f;
+  uploadLabel.innerHTML = `<strong>${f.name}</strong><br><small style="opacity:.6">${(f.size/1024/1024).toFixed(1)} MB</small>`;
+  analyzeBtn.disabled = false;
+});
+
+// ── Analyze ────────────────────────────────────────────────────────────────
+analyzeBtn.addEventListener('click', async () => {
+  if (!selectedFile) return;
+  showLoading('Uploading audio…');
+
+  const formData = new FormData();
+  formData.append('file', selectedFile);
+  const tabName = document.getElementById('tabName').value;
+  if (tabName) formData.append('tab_name', tabName);
+
+  try {
+    const token = (typeof Auth !== 'undefined' && Auth.getToken?.()) || localStorage.getItem('access_token') || authToken || '';
+    const headers = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    document.getElementById('loadingText').textContent = 'Analyzing chords…';
+
+    const res = await fetch(`${API_BASE}/chords/recognize`, {
+      method: 'POST', headers, body: formData
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || `HTTP ${res.status}`);
+    }
+    const data = await res.json();
+    hideLoading();
+    showToast(`✓ Found ${data.chords.length} chords`, 'success');
+
+    const record = {
+      id: data.storage_key || Date.now().toString(),
+      name: tabName || selectedFile.name.replace(/\.[^.]+$/, ''),
+      filename: data.file,
+      duration: data.duration,
+      chords: data.chords,
+      audioUrl: data.audio_url,
+    };
+    history.unshift(record);
+    renderHistory();
+    loadTab(record, null);
+
+  } catch (err) {
+    hideLoading();
+    showToast(`Error: ${err.message}`, 'error');
+    if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
+      showToast('Demo mode (API offline)', '');
+      demoMode(selectedFile);
+    }
+  }
+});
+
+// ── Demo mode ──────────────────────────────────────────────────────────────
+function demoMode(file) {
+  const url = URL.createObjectURL(file);
+  const audio = new Audio(url);
+  audio.addEventListener('loadedmetadata', () => {
+    const dur = audio.duration;
+    const record = {
+      id: Date.now().toString(),
+      name: file.name.replace(/\.[^.]+$/, ''),
+      filename: file.name,
+      duration: dur,
+      chords: generateDemoChords(dur),
+      audioUrl: url,
+    };
+    history.unshift(record);
+    renderHistory();
+    loadTab(record, file);
+    showToast('Demo: generated chords (API not connected)', '');
+  });
+}
+function generateDemoChords(duration) {
+  const prog = [
+    {root:'C',quality:'maj',display:'C'},{root:'A',quality:'min',display:'Am'},
+    {root:'F',quality:'maj',display:'F'},{root:'G',quality:'maj',display:'G'},
+    {root:'C',quality:'maj',display:'C'},{root:'E',quality:'min',display:'Em'},
+    {root:'F',quality:'maj',display:'F'},{root:'G',quality:'7',display:'G7'},
+  ];
+  const chords = []; let t = 0, i = 0;
+  while (t < duration) {
+    const len = 1.5 + Math.random() * 1.5;
+    const c = prog[i++ % prog.length];
+    chords.push({ start: +t.toFixed(2), end: +(Math.min(t+len, duration)).toFixed(2), chord: `${c.root}:${c.quality}`, root: c.root, quality: c.quality, display: c.display });
+    t += len;
+  }
+  return chords;
+}
+
+// ── Load history from API ──────────────────────────────────────────────────
+async function loadHistory() {
+  const token = (typeof Auth !== 'undefined' && Auth.getToken?.()) || localStorage.getItem('access_token') || authToken || '';
+  if (!token) return;
+  try {
+    const res = await fetch(`${API_BASE}/chords/my-chords`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!res.ok) return;
+    const data = await res.json();
+    history = data.map(r => ({
+      id: r.id,
+      name: r.tab_name || r.original_filename,
+      filename: r.original_filename,
+      duration: null,
+      chords: r.chords,
+      audioUrl: r.audio_url,
+    }));
+    renderHistory();
+  } catch {}
+}
+
+// ── Sidebar history ────────────────────────────────────────────────────────
+function renderHistory() {
+  const list = document.getElementById('historyList');
+  if (!history.length) {
+    list.innerHTML = `<div style="font-size:12px;color:var(--muted);text-align:center;padding:20px 0;">No tabs yet</div>`;
+    return;
+  }
+  list.innerHTML = history.map(r => `
+    <div class="history-item ${r.id === activeHistoryId ? 'active' : ''}" onclick="loadTabFromHistory('${r.id}')">
+      <div class="history-thumb">🎵</div>
+      <div class="history-info">
+        <div class="history-name">${r.name}</div>
+        <div class="history-meta">${r.chords.length} chords${r.duration ? ' · ' + fmt(r.duration) : ''}</div>
+      </div>
+      <div class="history-dot"></div>
+    </div>
+  `).join('');
+}
+function loadTabFromHistory(id) {
+  const r = history.find(h => h.id === id);
+  if (r) loadTab(r, null);
+}
+
+// ── Load tab ───────────────────────────────────────────────────────────────
+function loadTab(record, fileOrNull) {
+  activeHistoryId  = record.id;
+  currentChords    = record.chords;
+  currentDuration  = record.duration || 0;
+  lastChordIdx     = -1;
+  renderHistory();
+
+  document.getElementById('emptyState').style.display = 'none';
+  const ui = document.getElementById('playerUI');
+  ui.style.display = 'flex';
+  ui.style.flexDirection = 'column';
+
+  document.getElementById('trackName').textContent   = record.name;
+  document.getElementById('trackMeta').textContent   = record.filename;
+  document.getElementById('statChords').textContent  = record.chords.length;
+  document.getElementById('statDuration').textContent = record.duration ? fmt(record.duration) : '…';
+  document.getElementById('chordCountBadge').textContent = `${record.chords.length} chords`;
+
+  renderChordScroll(record.chords);
+  renderSegmentBar(record.chords, record.duration || 0);
+  drawFretboard('–', '');
+
+  if (audioEl) { audioEl.pause(); audioEl.src = ''; cancelAnimationFrame(animFrame); }
+  audioEl = new Audio();
+  audioEl.volume = parseFloat(document.getElementById('volumeSlider').value);
+  if (record.audioUrl) audioEl.src = record.audioUrl;
+  else if (fileOrNull)  audioEl.src = URL.createObjectURL(fileOrNull);
+
+  audioEl.addEventListener('loadedmetadata', () => {
+    currentDuration = audioEl.duration;
+    document.getElementById('statDuration').textContent = fmt(currentDuration);
+    document.getElementById('timeDisplay').textContent = `0:00 / ${fmt(currentDuration)}`;
+    drawWaveform();
+    renderSegmentBar(currentChords, currentDuration);
+  });
+  audioEl.addEventListener('ended', () => { updatePlayIcon(false); cancelAnimationFrame(animFrame); });
+
+  setupPlayerControls();
+  setCurrentChord(0);
+}
+
+// ── Chord scroll ───────────────────────────────────────────────────────────
+function renderChordScroll(chords) {
+  document.getElementById('chordScroll').innerHTML = chords.map((c, i) => `
+    <div class="chord-pill" id="pill-${i}" onclick="seekToChord(${i})">
+      <div class="chord-root">${c.display || c.root}</div>
+      <div class="chord-quality">${c.quality}</div>
+      <div class="chord-time">${fmt(c.start)}</div>
+      <div class="chord-active-bar"></div>
+    </div>
+  `).join('');
+}
+function seekToChord(i) {
+  if (!audioEl) return;
+  audioEl.currentTime = currentChords[i].start + 0.01;
+  setCurrentChord(i);
+}
+
+// ── Segment bar ────────────────────────────────────────────────────────────
+function renderSegmentBar(chords, duration) {
+  const bar = document.getElementById('segmentBar');
+  [...bar.querySelectorAll('.segment-block')].forEach(b => b.remove());
+  if (!duration || !chords.length) return;
+  chords.forEach((c, i) => {
+    const pct = ((c.end - c.start) / duration) * 100;
+    const block = document.createElement('div');
+    block.className = 'segment-block';
+    block.style.width = `${pct}%`;
+    block.style.background = colorForChord(c.display);
+    block.title = `${c.display} (${fmt(c.start)} – ${fmt(c.end)})`;
+    if (pct > 3) block.textContent = c.display;
+    block.addEventListener('click', e => { e.stopPropagation(); seekToChord(i); });
+    bar.insertBefore(block, document.getElementById('segmentNeedle'));
+  });
+}
+
+// ── Waveform ───────────────────────────────────────────────────────────────
+function drawWaveform() {
+  const canvas = document.getElementById('waveform');
+  const ctx = canvas.getContext('2d');
+  canvas.width  = canvas.offsetWidth  * window.devicePixelRatio;
+  canvas.height = canvas.offsetHeight * window.devicePixelRatio;
+  ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+  const W = canvas.offsetWidth, H = canvas.offsetHeight;
+  const bars = 120, barW = W / bars;
+  ctx.clearRect(0, 0, W, H);
+  for (let i = 0; i < bars; i++) {
+    const h = (0.2 + Math.random() * 0.7) * H * 0.8;
+    const grad = ctx.createLinearGradient(0, H/2 - h/2, 0, H/2 + h/2);
+    grad.addColorStop(0, '#1db95460');
+    grad.addColorStop(1, '#1db95420');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.roundRect(i * barW + 1, (H - h) / 2, barW - 2, h, 2);
+    ctx.fill();
+  }
+  canvas.onclick = e => {
+    const rect = canvas.getBoundingClientRect();
+    if (audioEl && currentDuration) audioEl.currentTime = ((e.clientX - rect.left) / rect.width) * currentDuration;
+  };
+}
+
+// ── Fretboard ──────────────────────────────────────────────────────────────
+const CHORD_FINGERINGS = {
+  'C':   [[0,1],[2,2],[3,2],[4,0],[5,-1]],
+  'Am':  [[0,0],[1,1],[2,2],[3,2],[4,0],[5,-1]],
+  'F':   [[0,1],[1,1],[2,2],[3,3],[4,3],[5,1]],
+  'G':   [[0,3],[1,2],[2,0],[3,0],[4,0],[5,3]],
+  'Em':  [[0,0],[1,0],[2,0],[3,2],[4,2],[5,0]],
+  'G7':  [[0,1],[1,0],[2,0],[3,0],[4,2],[5,3]],
+  'D':   [[0,-1],[1,-1],[2,0],[3,2],[4,3],[5,2]],
+  'A':   [[0,0],[1,2],[2,2],[3,2],[4,0],[5,-1]],
+  'E':   [[0,0],[1,2],[2,2],[3,1],[4,0],[5,0]],
+  'Dm':  [[0,-1],[1,-1],[2,0],[3,2],[4,3],[5,1]],
+  'Bm':  [[0,-1],[1,2],[2,4],[3,4],[4,3],[5,2]],
+  'Am7': [[0,0],[1,1],[2,0],[3,2],[4,0],[5,-1]],
+};
+function drawFretboard(root, quality) {
+  const canvas = document.getElementById('fretboard');
+  const ctx = canvas.getContext('2d');
+  const W = 120, H = 150;
+  ctx.clearRect(0, 0, W, H);
+  const label = root === '–' ? '–' : `${root}${quality === 'maj' ? '' : quality}`;
+  const fingering = CHORD_FINGERINGS[label];
+  const strings = 6, frets = 5;
+  const padL = 18, padT = 24, padR = 10;
+  const gridW = W - padL - padR, gridH = H - padT - 20;
+  const sGap = gridW / (strings - 1), fGap = gridH / frets;
+
+  ctx.fillStyle = '#ffffff30';
+  ctx.fillRect(padL - 2, padT, gridW + 4, 3);
+  for (let f = 0; f <= frets; f++) {
+    ctx.strokeStyle = f === 0 ? '#ffffff60' : '#ffffff18';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(padL, padT + f * fGap); ctx.lineTo(padL + gridW, padT + f * fGap); ctx.stroke();
+  }
+  for (let s = 0; s < strings; s++) {
+    ctx.strokeStyle = '#ffffff25'; ctx.lineWidth = 0.8;
+    ctx.beginPath(); ctx.moveTo(padL + s * sGap, padT); ctx.lineTo(padL + s * sGap, padT + gridH); ctx.stroke();
+  }
+  if (fingering) {
+    fingering.forEach(([strIdx, fret]) => {
+      const x = padL + strIdx * sGap;
+      if (fret === -1) {
+        ctx.strokeStyle = '#ff4d4d80'; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(x-4, padT-12); ctx.lineTo(x+4, padT-4);
+        ctx.moveTo(x+4, padT-12); ctx.lineTo(x-4, padT-4); ctx.stroke();
+      } else if (fret === 0) {
+        ctx.strokeStyle = '#1db95480'; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.arc(x, padT-8, 4, 0, Math.PI*2); ctx.stroke();
+      } else {
+        const y = padT + (fret - 0.5) * fGap;
+        const g = ctx.createRadialGradient(x, y, 0, x, y, 8);
+        g.addColorStop(0, '#1db954'); g.addColorStop(1, '#0d7a34');
+        ctx.fillStyle = g;
+        ctx.beginPath(); ctx.arc(x, y, 7, 0, Math.PI*2); ctx.fill();
+      }
+    });
+  }
+  ctx.fillStyle = '#ffffff60';
+  ctx.font = 'bold 11px Clash Display, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(label === '–' ? '' : label, W / 2, 12);
+}
+
+// ── Player controls ────────────────────────────────────────────────────────
+function setupPlayerControls() {
+  document.getElementById('playBtn').onclick = () => {
+    if (!audioEl) return;
+    if (audioEl.paused) { audioEl.play(); updatePlayIcon(true); startLoop(); }
+    else { audioEl.pause(); updatePlayIcon(false); cancelAnimationFrame(animFrame); }
+  };
+  document.getElementById('volumeSlider').oninput = e => {
+    if (audioEl) audioEl.volume = parseFloat(e.target.value);
+  };
+  document.getElementById('progressContainer').addEventListener('click', e => {
+    const rect = document.getElementById('progressContainer').getBoundingClientRect();
+    const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    if (audioEl && currentDuration) audioEl.currentTime = pct * currentDuration;
+  });
+}
+function updatePlayIcon(playing) {
+  document.getElementById('playIcon').innerHTML = playing
+    ? '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>'
+    : '<polygon points="5,3 19,12 5,21"/>';
+}
+function startLoop() {
+  function tick() { if (audioEl) { updateProgress(); animFrame = requestAnimationFrame(tick); } }
+  animFrame = requestAnimationFrame(tick);
+}
+function updateProgress() {
+  if (!audioEl || !currentDuration) return;
+  const t = audioEl.currentTime, pct = (t / currentDuration) * 100;
+  document.getElementById('progressFill').style.width    = `${pct}%`;
+  document.getElementById('progressThumb').style.left   = `calc(${pct}% - 6px)`;
+  document.getElementById('waveformOverlay').style.width = `${pct}%`;
+  document.getElementById('playerTime').textContent      = fmt(t);
+  document.getElementById('timeDisplay').textContent     = `${fmt(t)} / ${fmt(currentDuration)}`;
+  document.getElementById('segmentNeedle').style.left    = `${pct}%`;
+  const idx = currentChords.findIndex(c => t >= c.start && t < c.end);
+  if (idx !== -1) setCurrentChord(idx);
+}
+
+// ── Active chord ───────────────────────────────────────────────────────────
+function setCurrentChord(idx) {
+  if (idx === lastChordIdx) return;
+  lastChordIdx = idx;
+  const chord = currentChords[idx];
+  if (!chord) return;
+
+  const nameEl = document.getElementById('currentChordName');
+  nameEl.textContent  = chord.display || chord.root;
+  nameEl.style.color  = colorForChord(chord.display);
+  document.getElementById('currentChordQuality').textContent =
+    chord.quality === 'maj' ? 'Major' : chord.quality === 'min' ? 'Minor' : chord.quality.toUpperCase();
+
+  const next = currentChords[idx + 1];
+  const hint = document.getElementById('nextChordHint');
+  if (next) { hint.style.display = 'flex'; document.getElementById('nextChordName').textContent = next.display; }
+  else hint.style.display = 'none';
+
+  drawFretboard(chord.root, chord.quality);
+
+  document.querySelectorAll('.chord-pill').forEach((p, i) => {
+    p.classList.remove('active', 'past');
+    if (i === idx) p.classList.add('active');
+    else if (i < idx) p.classList.add('past');
+  });
+  // Disabled auto-scroll to prevent disruptive jumping
+  // document.getElementById(`pill-${idx}`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────
+(async () => {
+  await ensureAuth();
+  await loadHistory();
+})();
+</script>
+<script src="/static/js/auth.js"></script>
+<script src="/static/js/sidenav.js"></script>
+</body>
+</html>

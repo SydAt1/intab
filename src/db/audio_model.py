@@ -19,3 +19,4 @@ class AudioFile(Base):
     # Relationships
     user = relationship("User", back_populates="audio_files")
     tablature = relationship("Tablature", back_populates="audio_file", uselist=False)
+    chord_data = relationship("Chord", back_populates="audio_file", uselist=False)
