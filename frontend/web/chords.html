@@ -628,8 +628,16 @@ function setCurrentChord(idx) {
     if (i === idx) p.classList.add('active');
     else if (i < idx) p.classList.add('past');
   });
-  // Disabled auto-scroll to prevent disruptive jumping
-  // document.getElementById(`pill-${idx}`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  // Use getBoundingClientRect to calculate horizontal scroll amount smoothly
+  // avoids the disruptive vertical jumping sometimes caused by scrollIntoView()
+  const pill = document.getElementById(`pill-${idx}`);
+  const container = document.getElementById('chordScroll');
+  if (pill && container) {
+    const pRect = pill.getBoundingClientRect();
+    const cRect = container.getBoundingClientRect();
+    const scrollAmount = pRect.left - cRect.left - (cRect.width / 2) + (pRect.width / 2);
+    container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+  }
 }
 
 // ── Init ───────────────────────────────────────────────────────────────────

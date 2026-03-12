@@ -258,7 +258,8 @@ async def get_my_uploads(
 ):
     """Returns all uploads for the logged-in user, newest first."""
     records = db.query(AudioFile).filter(
-        AudioFile.user_id == current_user.id
+        AudioFile.user_id == current_user.id,
+        AudioFile.storage_key.startswith("uploads/")
     ).order_by(AudioFile.uploaded_at.desc()).all()
     
     return [
@@ -313,7 +314,10 @@ async def search_uploads(
     current_user: User = Depends(get_current_user)
 ):
     """Searches audio files belonging to the logged-in user."""
-    query = db.query(AudioFile).filter(AudioFile.user_id == current_user.id)
+    query = db.query(AudioFile).filter(
+        AudioFile.user_id == current_user.id,
+        AudioFile.storage_key.startswith("uploads/")
+    )
     
     if name:
         query = query.filter(AudioFile.tab_name.ilike(f"%{name}%"))

@@ -115,8 +115,9 @@ async def get_my_chords(
     current_user: User = Depends(get_current_user)
 ):
     """Returns all chord recognitions for the logged-in user, newest first."""
-    records = db.query(AudioFile).join(Chord).filter(
-        AudioFile.user_id == current_user.id
+    records = db.query(AudioFile).filter(
+        AudioFile.user_id == current_user.id,
+        AudioFile.storage_key.startswith("chords/")
     ).order_by(AudioFile.uploaded_at.desc()).all()
     
     results = []
