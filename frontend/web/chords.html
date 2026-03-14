@@ -61,6 +61,20 @@
         <input type="text" id="tabName" placeholder="My Song" />
       </div>
 
+      <!-- Guitar separation toggle -->
+      <div class="toggle-group">
+        <div class="toggle-row">
+          <label class="toggle-switch">
+            <input type="checkbox" id="guitarSepToggle" />
+            <span class="toggle-slider"></span>
+          </label>
+          <div class="toggle-label">
+            <span>Isolate Guitar</span>
+            <small>Run Demucs stem separation before analysis</small>
+          </div>
+        </div>
+      </div>
+
       <!-- Analyze -->
       <button class="btn-analyze" id="analyzeBtn" disabled>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -271,18 +285,21 @@ uploadZone.addEventListener('drop', e => {
 // ── Analyze ────────────────────────────────────────────────────────────────
 analyzeBtn.addEventListener('click', async () => {
   if (!selectedFile) return;
-  showLoading('Uploading audio…');
+  const useGuitarSep = document.getElementById('guitarSepToggle').checked;
+  showLoading(useGuitarSep ? 'Separating guitar stem…' : 'Uploading audio…');
 
   const formData = new FormData();
   formData.append('file', selectedFile);
   const tabName = document.getElementById('tabName').value;
   if (tabName) formData.append('tab_name', tabName);
 
+  formData.append('use_guitar_separation', useGuitarSep);
+
   try {
     const token = (typeof Auth !== 'undefined' && Auth.getToken?.()) || localStorage.getItem('access_token') || authToken || '';
     const headers = {};
     if (token) headers['Authorization'] = `Bearer ${token}`;
-    document.getElementById('loadingText').textContent = 'Analyzing chords…';
+    document.getElementById('loadingText').textContent = useGuitarSep ? 'Isolating guitar & analyzing chords…' : 'Analyzing chords…';
 
     const res = await fetch(`${API_BASE}/chords/recognize`, {
       method: 'POST', headers, body: formData

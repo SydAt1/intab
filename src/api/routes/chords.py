@@ -7,13 +7,13 @@ import uuid
 import json
 
 from src.chords.chords import recognize_chords
+from src.tablature.upload_service import separate_guitar, preprocess_audio
 from src.core import minio_client
 from src.db.connection import get_db
 from src.db.models import User
 from src.db.audio_model import AudioFile
 from src.db.chord_model import Chord
 from src.api.dependencies import get_current_user
-from src.core import minio_client
 
 router = APIRouter(prefix="/chords", tags=["chords"])
 
@@ -24,6 +24,7 @@ MAX_FILE_SIZE = 50 * 1024 * 1024  # 50 MB
 async def recognize_chords_api(
     file: UploadFile = File(...),
     tab_name: str = Form(None),
+    use_guitar_separation: bool = Form(False),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -62,9 +63,18 @@ async def recognize_chords_api(
         temp_file_path = os.path.join(temp_dir, f"temp_upload_{file.filename}")
         with open(temp_file_path, "wb") as f:
             f.write(file_bytes)
-            
+
+        # Optionally isolate guitar stem via Demucs before chord recognition
+        audio_for_chords = temp_file_path
+        if use_guitar_separation:
+            print("Running Demucs guitar separation for chord recognition...")
+            guitar_stem_path = separate_guitar(temp_file_path, temp_dir)
+            processed_path = os.path.join(temp_dir, f"proc_{file.filename}")
+            preprocess_audio(guitar_stem_path, processed_path)
+            audio_for_chords = processed_path
+
         # Process the audio file to get chords
-        chords, duration = recognize_chords(temp_file_path)
+        chords, duration = recognize_chords(audio_for_chords)
         
         # Save to database
         final_tab_name = tab_name if tab_name else os.path.splitext(file.filename)[0]
