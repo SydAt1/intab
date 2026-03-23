@@ -144,3 +144,102 @@ async def get_my_chords(
             "chords": chords_data
         })
     return results
+
+
+from pydantic import BaseModel
+from typing import Optional
+
+class PathRecognizeRequest(BaseModel):
+    file_path: str
+    tab_name: Optional[str] = None
+    use_guitar_separation: bool = False
+
+@router.post("/recognize-from-path")
+async def recognize_chords_from_path(
+    payload: PathRecognizeRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Recognize chords from a file that was already downloaded to disk
+    (e.g. via the /upload/url endpoint). Accepts a file_path instead of
+    an uploaded file, but otherwise follows the same pipeline.
+    """
+    if not os.path.exists(payload.file_path):
+        raise HTTPException(status_code=400, detail="File not found at the given path.")
+
+    temp_dir = tempfile.mkdtemp()
+    try:
+        # Read file for MinIO storage
+        with open(payload.file_path, "rb") as f:
+            file_bytes = f.read()
+
+        file_size = len(file_bytes)
+        if file_size > MAX_FILE_SIZE:
+            raise HTTPException(status_code=400, detail="File too large. Maximum size is 50MB.")
+
+        original_filename = os.path.basename(payload.file_path)
+        _, ext = os.path.splitext(original_filename)
+        if not ext:
+            ext = ".wav"
+
+        file_id = str(uuid.uuid4())
+        storage_key = f"chords/{current_user.id}/{file_id}{ext}"
+
+        content_type = "audio/wav" if ext.lower() == ".wav" else "audio/mpeg"
+        minio_client.upload_audio(file_bytes, storage_key, content_type)
+        audio_url = minio_client.get_presigned_url(storage_key)
+
+        # Optionally isolate guitar stem
+        audio_for_chords = payload.file_path
+        if payload.use_guitar_separation:
+            print("Running Demucs guitar separation for chord recognition (URL upload)...")
+            guitar_stem_path = separate_guitar(payload.file_path, temp_dir)
+            processed_path = os.path.join(temp_dir, f"proc_url_{file_id}.wav")
+            preprocess_audio(guitar_stem_path, processed_path)
+            audio_for_chords = processed_path
+
+        # Process chords
+        chords, duration = recognize_chords(audio_for_chords)
+
+        # Save to database
+        final_tab_name = payload.tab_name if payload.tab_name else original_filename.rsplit(".", 1)[0]
+
+        new_audio = AudioFile(
+            id=file_id,
+            user_id=current_user.id,
+            original_filename=original_filename,
+            storage_key=storage_key,
+            file_size_bytes=file_size,
+            tab_name=final_tab_name,
+            status="done"
+        )
+        db.add(new_audio)
+
+        new_chord = Chord(
+            audio_file_id=file_id,
+            user_id=current_user.id,
+            chord_data_json=json.dumps(chords)
+        )
+        db.add(new_chord)
+        db.commit()
+
+        return JSONResponse(content={
+            "status": "success",
+            "file": original_filename,
+            "storage_key": storage_key,
+            "audio_url": audio_url,
+            "duration": duration,
+            "chords": chords
+        })
+
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Chord recognition failed: {str(e)}")
+    finally:
+        if os.path.exists(temp_dir):
+            import shutil
+            shutil.rmtree(temp_dir, ignore_errors=True)

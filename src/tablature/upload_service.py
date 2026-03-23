@@ -129,3 +129,67 @@ def process_upload(upload_file: UploadFile, temp_dir: str = None) -> str:
         # Cleanup raw upload, Demucs intermediate files
         if os.path.exists(raw_path):
             os.remove(raw_path)
+
+
+def process_url_upload(url: str, temp_dir: str = None) -> str:
+    """
+    Download audio from a YouTube/TikTok URL via yt-dlp, then run through
+    the same Demucs guitar separation + normalization pipeline.
+    Returns the path to the processed audio file.
+    """
+    import subprocess
+    import glob
+
+    if temp_dir is None:
+        temp_dir = tempfile.gettempdir()
+
+    os.makedirs(temp_dir, exist_ok=True)
+
+    output_template = os.path.join(temp_dir, "raw_ytdlp.%(ext)s")
+    processed_path = os.path.join(temp_dir, "proc_ytdlp.wav")
+
+    # 1. Download audio with yt-dlp
+    result = subprocess.run(
+        [
+            "yt-dlp",
+            "--extract-audio",
+            "--audio-format", "wav",
+            "--audio-quality", "0",
+            "--no-playlist",
+            "--max-filesize", "50m",
+            "-o", output_template,
+            url,
+        ],
+        capture_output=True,
+        text=True,
+    )
+
+    if result.returncode != 0:
+        stderr = result.stderr or ""
+        if "Video unavailable" in stderr or "Private video" in stderr:
+            raise ValueError(
+                "This video is unavailable or private. Please check the URL and try again."
+            )
+        raise RuntimeError(f"yt-dlp failed: {stderr.strip() or 'Unknown error'}")
+
+    # 2. Locate the downloaded file
+    matches = glob.glob(os.path.join(temp_dir, "raw_ytdlp.*"))
+    if not matches:
+        raise RuntimeError("yt-dlp finished but no downloaded file was found.")
+
+    raw_path = matches[0]
+
+    try:
+        # 3. Separate guitar stem
+        print("Running Demucs guitar separation on downloaded audio (this may take 1-3 min on CPU)...")
+        guitar_stem_path = separate_guitar(raw_path, temp_dir)
+
+        # 4. Normalize + resample
+        preprocess_audio(guitar_stem_path, processed_path)
+
+        return processed_path
+
+    finally:
+        # Cleanup raw yt-dlp download
+        if os.path.exists(raw_path):
+            os.remove(raw_path)

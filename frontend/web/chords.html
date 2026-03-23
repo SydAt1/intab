@@ -38,19 +38,41 @@
       <!-- Upload -->
       <div>
         <div class="sidebar-section-label">Upload Audio</div>
-        <div class="upload-zone" id="uploadZone">
-          <input type="file" id="fileInput" accept="audio/*" />
-          <div class="upload-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-              <polyline points="17 8 12 3 7 8"/>
-              <line x1="12" y1="3" x2="12" y2="15"/>
-            </svg>
+
+        <!-- Tab Toggle -->
+        <div class="upload-tab-toggle">
+          <button class="upload-tab active" id="tabFile" onclick="switchUploadTab('file')">Upload File</button>
+          <button class="upload-tab" id="tabUrl" onclick="switchUploadTab('url')">Paste URL</button>
+        </div>
+
+        <!-- File Panel -->
+        <div id="filePanel">
+          <div class="upload-zone" id="uploadZone">
+            <input type="file" id="fileInput" accept="audio/*" />
+            <div class="upload-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+            </div>
+            <div class="upload-label" id="uploadLabel">
+              <strong>Drop a file here</strong><br>
+              or click to browse<br>
+              <small style="opacity:.6">MP3, WAV, FLAC, OGG up to 50MB</small>
+            </div>
           </div>
-          <div class="upload-label" id="uploadLabel">
-            <strong>Drop a file here</strong><br>
-            or click to browse<br>
-            <small style="opacity:.6">MP3, WAV, FLAC, OGG up to 50MB</small>
+        </div>
+
+        <!-- URL Panel -->
+        <div id="urlPanel" style="display:none">
+          <div class="url-input-group">
+            <input type="text" id="urlInput" class="url-text-input" placeholder="Paste a YouTube or TikTok URL" />
+            <p class="url-error" id="urlError" style="display:none"></p>
+            <button class="btn-analyze" id="urlFetchBtn" onclick="handleUrlAnalyze()">
+              <span id="urlFetchBtnText">🔗 Fetch & Analyze Chords</span>
+            </button>
+            <p class="url-hint">Supports youtube.com, youtu.be, tiktok.com — max 50 MB</p>
           </div>
         </div>
       </div>
@@ -221,6 +243,22 @@ let selectedFile   = null;
 let history        = [];
 let activeHistoryId = null;
 let lastChordIdx   = -1;
+let currentUploadTab = 'file';
+
+const ALLOWED_URL_HOSTS = new Set([
+  'youtube.com', 'www.youtube.com', 'youtu.be',
+  'tiktok.com', 'www.tiktok.com', 'vm.tiktok.com',
+]);
+
+// ── Tab toggle ──
+function switchUploadTab(tab) {
+  currentUploadTab = tab;
+  document.getElementById('tabFile').classList.toggle('active', tab === 'file');
+  document.getElementById('tabUrl').classList.toggle('active', tab === 'url');
+  document.getElementById('filePanel').style.display = tab === 'file' ? '' : 'none';
+  document.getElementById('urlPanel').style.display = tab === 'url' ? '' : 'none';
+  document.getElementById('urlError').style.display = 'none';
+}
 
 // ── Chord colours ──────────────────────────────────────────────────────────
 const CHORD_COLORS = [
@@ -333,6 +371,97 @@ analyzeBtn.addEventListener('click', async () => {
     }
   }
 });
+
+// ── URL Analyze ──
+async function handleUrlAnalyze() {
+  const urlInput = document.getElementById('urlInput');
+  const errEl = document.getElementById('urlError');
+  const btn = document.getElementById('urlFetchBtn');
+  const btnText = document.getElementById('urlFetchBtnText');
+  const rawUrl = urlInput.value.trim();
+  errEl.style.display = 'none';
+
+  if (!rawUrl) { showUrlError('Please paste a URL.'); return; }
+  try {
+    const parsed = new URL(rawUrl);
+    if (!ALLOWED_URL_HOSTS.has(parsed.hostname)) {
+      showUrlError('Only YouTube and TikTok URLs are supported.');
+      return;
+    }
+  } catch {
+    showUrlError('That doesn\'t look like a valid URL.');
+    return;
+  }
+
+  const useGuitarSep = document.getElementById('guitarSepToggle').checked;
+  btn.disabled = true;
+  btnText.textContent = '⏳ Fetching audio…';
+  showLoading('Downloading audio from URL…');
+
+  try {
+    // Step 1: Download audio via yt-dlp
+    const dlRes = await fetch('/upload/url', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: rawUrl }),
+    });
+    if (!dlRes.ok) {
+      const err = await dlRes.json().catch(() => ({ detail: 'Unknown error' }));
+      throw new Error(err.detail || 'Download failed');
+    }
+    const dlData = await dlRes.json();
+
+    // Step 2: Send file_path to chord recognition
+    document.getElementById('loadingText').textContent = useGuitarSep ? 'Isolating guitar & analyzing chords…' : 'Analyzing chords…';
+    const token = (typeof Auth !== 'undefined' && Auth.getToken?.()) || localStorage.getItem('access_token') || authToken || '';
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const tabName = document.getElementById('tabName').value;
+    const chordRes = await fetch(`${API_BASE}/chords/recognize-from-path`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        file_path: dlData.file_path,
+        tab_name: tabName || '',
+        use_guitar_separation: useGuitarSep,
+      }),
+    });
+    if (!chordRes.ok) {
+      const err = await chordRes.json().catch(() => ({}));
+      throw new Error(err.detail || `HTTP ${chordRes.status}`);
+    }
+    const data = await chordRes.json();
+    hideLoading();
+    showToast(`✓ Found ${data.chords.length} chords`, 'success');
+    btnText.textContent = '✓ Done';
+
+    const record = {
+      id: data.storage_key || Date.now().toString(),
+      name: tabName || 'URL Import',
+      filename: rawUrl,
+      duration: data.duration,
+      chords: data.chords,
+      audioUrl: data.audio_url,
+    };
+    history.unshift(record);
+    renderHistory();
+    loadTab(record, null);
+
+  } catch (err) {
+    hideLoading();
+    showUrlError(err.message);
+    showToast(`Error: ${err.message}`, 'error');
+    btn.disabled = false;
+    btnText.textContent = '🔗 Fetch & Analyze Chords';
+  }
+}
+
+function showUrlError(msg) {
+  const el = document.getElementById('urlError');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
 
 // ── Demo mode ──────────────────────────────────────────────────────────────
 function demoMode(file) {

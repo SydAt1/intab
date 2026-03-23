@@ -348,5 +348,7 @@ yarl==1.23.0
     #   storage3
     #   supabase
     #   supabase-functions
+yt-dlp
+    # via fyp-project (pyproject.toml)
 zstandard==0.25.0
     # via pyiceberg

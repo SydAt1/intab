@@ -30,28 +30,49 @@
                         <div class="section-header">
                             <span class="section-icon">↑</span>
                             <div>
-                                <h2 class="section-title">Audio File Input</h2>
-                                <p class="section-subtitle">MP3, WAV, FLAC, OGG — max 50MB</p>
+                                <h2 class="section-title">Audio Input</h2>
+                                <p class="section-subtitle">Upload a file or paste a link</p>
                             </div>
                         </div>
 
-                        <div class="drop-zone" id="dropZone">
-                            <div class="drop-zone-icon">
-                                <svg width="52" height="52" viewBox="0 0 52 52" fill="none">
-                                    <rect x="8" y="6" width="28" height="36" rx="4" stroke="#535353" stroke-width="2" />
-                                    <path d="M28 6v10h10" stroke="#535353" stroke-width="2" />
-                                    <circle cx="38" cy="38" r="10" fill="#1DB954" />
-                                    <path d="M34 38h8M38 34v8" stroke="#000" stroke-width="2.5"
-                                        stroke-linecap="round" />
-                                    <path d="M15 24h14M15 29h10" stroke="#535353" stroke-width="1.5"
-                                        stroke-linecap="round" />
-                                </svg>
+                        <!-- Tab Toggle -->
+                        <div class="upload-tab-toggle">
+                            <button class="upload-tab active" id="tabFile" onclick="switchUploadTab('file')">Upload File</button>
+                            <button class="upload-tab" id="tabUrl" onclick="switchUploadTab('url')">Paste URL</button>
+                        </div>
+
+                        <!-- File Upload Panel (existing) -->
+                        <div id="filePanel">
+                            <div class="drop-zone" id="dropZone">
+                                <div class="drop-zone-icon">
+                                    <svg width="52" height="52" viewBox="0 0 52 52" fill="none">
+                                        <rect x="8" y="6" width="28" height="36" rx="4" stroke="#535353" stroke-width="2" />
+                                        <path d="M28 6v10h10" stroke="#535353" stroke-width="2" />
+                                        <circle cx="38" cy="38" r="10" fill="#1DB954" />
+                                        <path d="M34 38h8M38 34v8" stroke="#000" stroke-width="2.5"
+                                            stroke-linecap="round" />
+                                        <path d="M15 24h14M15 29h10" stroke="#535353" stroke-width="1.5"
+                                            stroke-linecap="round" />
+                                    </svg>
+                                </div>
+                                <p class="drop-zone-text">Drop audio file here or click to browse</p>
+                                <p class="drop-zone-sub">Supported: MP3, WAV, OGG, FLAC</p>
+                                <button class="btn-select" onclick="document.getElementById('fileInput').click()">Select
+                                    File</button>
+                                <input type="file" id="fileInput" accept="audio/*" hidden />
                             </div>
-                            <p class="drop-zone-text">Drop audio file here or click to browse</p>
-                            <p class="drop-zone-sub">Supported: MP3, WAV, OGG, FLAC</p>
-                            <button class="btn-select" onclick="document.getElementById('fileInput').click()">Select
-                                File</button>
-                            <input type="file" id="fileInput" accept="audio/*" hidden />
+                        </div>
+
+                        <!-- URL Upload Panel (new) -->
+                        <div id="urlPanel" style="display:none">
+                            <div class="url-input-group">
+                                <input type="text" id="urlInput" class="text-input" placeholder="Paste a YouTube or TikTok URL" />
+                                <p class="url-error" id="urlError" style="display:none"></p>
+                                <button class="btn-primary url-fetch-btn" id="urlFetchBtn" onclick="handleUrlUpload()">
+                                    <span id="urlFetchBtnText">🔗 Fetch & Transcribe</span>
+                                </button>
+                                <p class="url-hint">Supports youtube.com, youtu.be, tiktok.com — max 50 MB</p>
+                            </div>
                         </div>
 
                         <!-- File Preview -->
@@ -272,10 +293,30 @@
         let isEditing = false;
         let audioBuffer = null;        // decoded AudioBuffer for waveform
         let audioDuration = 0;         // seconds
+        let currentUploadTab = 'file'; // 'file' or 'url'
 
         // Trim state (0–1 normalized ratios)
         let trimStart = 0;
         let trimEnd = 1;
+
+        // Allowed hostnames for URL upload
+        const ALLOWED_URL_HOSTS = new Set([
+            'youtube.com', 'www.youtube.com', 'youtu.be',
+            'tiktok.com', 'www.tiktok.com', 'vm.tiktok.com',
+        ]);
+
+        // ═══════════════════════════════════════════════
+        //  TAB TOGGLE
+        // ═══════════════════════════════════════════════
+        function switchUploadTab(tab) {
+            currentUploadTab = tab;
+            document.getElementById('tabFile').classList.toggle('active', tab === 'file');
+            document.getElementById('tabUrl').classList.toggle('active', tab === 'url');
+            document.getElementById('filePanel').style.display = tab === 'file' ? '' : 'none';
+            document.getElementById('urlPanel').style.display = tab === 'url' ? '' : 'none';
+            // Hide URL error when switching
+            document.getElementById('urlError').style.display = 'none';
+        }
 
         // ═══════════════════════════════════════════════
         //  DROP ZONE
@@ -576,6 +617,70 @@
         }
 
         // ═══════════════════════════════════════════════
+        //  URL UPLOAD
+        // ═══════════════════════════════════════════════
+        async function handleUrlUpload() {
+            const urlInput = document.getElementById('urlInput');
+            const errEl = document.getElementById('urlError');
+            const btn = document.getElementById('urlFetchBtn');
+            const btnText = document.getElementById('urlFetchBtnText');
+            const rawUrl = urlInput.value.trim();
+            errEl.style.display = 'none';
+
+            // Client-side validation
+            if (!rawUrl) { showUrlError('Please paste a URL.'); return; }
+            try {
+                const parsed = new URL(rawUrl);
+                if (!ALLOWED_URL_HOSTS.has(parsed.hostname)) {
+                    showUrlError('Only YouTube and TikTok URLs are supported.');
+                    return;
+                }
+            } catch {
+                showUrlError('That doesn\'t look like a valid URL.');
+                return;
+            }
+
+            btn.disabled = true;
+            btnText.textContent = '⏳ Fetching audio…';
+            showStatus('Fetching audio… this may take 1–3 minutes.', 'loading');
+
+            try {
+                const res = await fetch('/upload/url', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: rawUrl }),
+                });
+
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({ detail: 'Unknown server error' }));
+                    throw new Error(err.detail || 'Request failed');
+                }
+
+                const data = await res.json();
+
+                showStatus('Audio fetched & processed — click Generate Tablature', 'success');
+                btnText.textContent = '✓ Fetched';
+
+                // Enable transcribe with a pseudo audioId from file_path
+                // The transcription endpoint uses file_path, so store it similarly
+                currentAudioId = data.file_path;
+                document.getElementById('transcribeBtn').disabled = false;
+
+            } catch (err) {
+                showUrlError(err.message);
+                showStatus('Fetch failed: ' + err.message, 'error');
+                btn.disabled = false;
+                btnText.textContent = '🔗 Fetch & Transcribe';
+            }
+        }
+
+        function showUrlError(msg) {
+            const el = document.getElementById('urlError');
+            el.textContent = msg;
+            el.style.display = 'block';
+        }
+
+        // ═══════════════════════════════════════════════
         //  TRANSCRIBE / POLL
         // ═══════════════════════════════════════════════
         async function handleTranscribe() {
@@ -757,6 +862,12 @@
             document.getElementById('renameBar').style.display = 'none';
             document.getElementById('tabSubtitle').textContent = 'Upload and process an audio file to see results';
             document.getElementById('trimCard').style.display = 'none';
+            // Reset URL tab state
+            document.getElementById('urlInput').value = '';
+            document.getElementById('urlError').style.display = 'none';
+            document.getElementById('urlFetchBtn').disabled = false;
+            document.getElementById('urlFetchBtnText').textContent = '🔗 Fetch & Transcribe';
+            switchUploadTab('file');
             hideStatus();
         }
 

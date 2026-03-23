@@ -4,67 +4,106 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Sign Up - Tablature Intelligence</title>
-    <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800&display=swap"
-        rel="stylesheet" />
-
+    <title>Sign Up – InTab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="css/register.css">
 </head>
 
 <body>
 
     <header class="header">
-        <div class="header-title">Tablature Intelligence</div>
+        <div class="header-brand">
+            <span class="brand-mark">♩</span>
+            <span class="brand-name">InTab</span>
+        </div>
     </header>
 
     <div class="app-container">
-        <!-- Sidebar -->
         <aside id="sidebar-container"></aside>
 
         <main class="signup-content">
+
+            <!-- Ambient glow -->
+            <div class="glow glow-a"></div>
+            <div class="glow glow-b"></div>
+
             <div class="card">
-                <div class="header-logo">T</div>
+
+                <div class="card-eyebrow">Get started for free</div>
                 <h1 class="title">Create Account</h1>
-                <p class="subtitle">Sign up to start transcribing</p>
+                <p class="subtitle">Transcribe guitar audio to tab in seconds</p>
 
                 <div class="success-message" id="successMessage">
-                    Account created! Redirecting to login...
+                    <span class="success-icon">✓</span>
+                    Account created! Redirecting…
                 </div>
 
-                <form id="signupForm">
-                    <div class="form-group">
-                        <label for="fullName" class="form-label">Full Name</label>
-                        <input type="text" id="fullName" class="form-input" placeholder="Enter your full name" required>
-                        <div class="error-message" id="fullNameError">Please enter your full name</div>
+                <form id="signupForm" novalidate>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="fullName" class="form-label">Full Name</label>
+                            <input type="text" id="fullName" class="form-input" placeholder="Jamie Lee" autocomplete="name" required>
+                            <div class="error-message" id="fullNameError">Please enter your full name</div>
+                        </div>
                     </div>
 
                     <div class="form-group">
                         <label for="email" class="form-label">Email</label>
-                        <input type="email" id="email" class="form-input" placeholder="you@example.com" required>
+                        <input type="email" id="email" class="form-input" placeholder="you@example.com" autocomplete="email" required>
                         <div class="error-message" id="emailError">Valid email required</div>
                     </div>
 
-                    <div class="form-group">
-                        <label for="password" class="form-label">Password</label>
-                        <input type="password" id="password" class="form-input" placeholder="••••••••" required>
-                        <div class="error-message" id="passwordError">At least 6 characters</div>
+                    <div class="form-row two-col">
+                        <div class="form-group">
+                            <label for="password" class="form-label">Password</label>
+                            <div class="input-wrap">
+                                <input type="password" id="password" class="form-input" placeholder="••••••••" autocomplete="new-password" required>
+                                <button type="button" class="toggle-pw" aria-label="Show password" data-target="password">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                </button>
+                            </div>
+                            <div class="error-message" id="passwordError">Minimum 6 characters</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="confirmPassword" class="form-label">Confirm Password</label>
+                            <div class="input-wrap">
+                                <input type="password" id="confirmPassword" class="form-input" placeholder="••••••••" autocomplete="new-password" required>
+                                <button type="button" class="toggle-pw" aria-label="Show password" data-target="confirmPassword">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                </button>
+                            </div>
+                            <div class="error-message" id="confirmPasswordError">Passwords must match</div>
+                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <label for="confirmPassword" class="form-label">Confirm Password</label>
-                        <input type="password" id="confirmPassword" class="form-input" placeholder="••••••••" required>
-                        <div class="error-message" id="confirmPasswordError">Passwords must match</div>
+                    <!-- Strength indicator -->
+                    <div class="strength-bar-wrap" id="strengthWrap">
+                        <div class="strength-bar" id="strengthBar"></div>
+                        <span class="strength-label" id="strengthLabel"></span>
                     </div>
 
                     <div class="checkbox-group">
-                        <input type="checkbox" id="terms" class="checkbox-input" required>
-                        <label for="terms" class="checkbox-label">
-                            I agree to the <a href="#">Terms</a> & <a href="#">Privacy Policy</a>
+                        <label class="custom-checkbox">
+                            <input type="checkbox" id="terms" required>
+                            <span class="checkmark"></span>
+                            <span class="checkbox-label">
+                                I have read and agree to the
+                                <button type="button" class="link-btn" id="openTerms">Terms &amp; Conditions</button>
+                                including InTab's copyright compliance policy
+                            </span>
                         </label>
+                        <div class="error-message" id="termsError">You must accept the terms to continue</div>
                     </div>
 
-                    <button type="submit" class="btn-primary" id="submitBtn">Create Account</button>
+                    <button type="submit" class="btn-primary" id="submitBtn">
+                        <span class="btn-text">Create Account</span>
+                        <span class="btn-icon">→</span>
+                    </button>
                 </form>
+
+                <div class="divider"><span>or</span></div>
 
                 <div class="form-footer">
                     Already have an account? <a href="login.html">Log in</a>
@@ -73,34 +112,181 @@
         </main>
     </div>
 
+    <!-- ─── Terms & Conditions Modal ─── -->
+    <div class="modal-overlay" id="termsModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="modalTitle">Terms &amp; Conditions</h2>
+                <button class="modal-close" id="closeTerms" aria-label="Close">✕</button>
+            </div>
+            <div class="modal-body">
+
+                <div class="tc-meta">
+                    <span>InTab — Tablature Intelligence</span>
+                    <span>Effective: January 2025</span>
+                </div>
+
+                <p class="tc-intro">
+                    These Terms &amp; Conditions govern your use of InTab. By creating an account, you agree to all terms below in full. Please read carefully before proceeding.
+                </p>
+
+                <section class="tc-section">
+                    <h3>1. Acceptance of Terms</h3>
+                    <p>By registering for or using InTab ("the Service"), you confirm that you are at least 13 years of age and have the legal capacity to enter into this agreement. If you are using InTab on behalf of an organisation, you represent that you have the authority to bind that organisation to these terms.</p>
+                </section>
+
+                <section class="tc-section">
+                    <h3>2. Description of Service</h3>
+                    <p>InTab is a web application that provides automated guitar tablature transcription and chord recognition using machine learning. The Service processes audio input — either via file upload or URL — and returns estimated tablature notation. InTab makes use of the following third-party libraries and frameworks in its processing pipeline:</p>
+                    <ul class="tc-list">
+                        <li><strong>librosa</strong> — audio analysis and CQT feature extraction (McFee et al., BSD licence)</li>
+                        <li><strong>SciPy</strong> — scientific signal processing utilities (BSD licence)</li>
+                        <li><strong>FastAPI</strong> — the web API framework powering InTab's backend (MIT licence)</li>
+                        <li><strong>SQLAlchemy</strong> — ORM layer for database interactions (MIT licence)</li>
+                        <li><strong>MinIO</strong> — object storage for audio and output files (AGPLv3 / commercial licence)</li>
+                        <li><strong>MDN Web APIs</strong> — browser-side APIs (Web Audio, Fetch, Canvas) as documented by Mozilla</li>
+                    </ul>
+                    <p>These libraries are used in accordance with their respective open-source licences. InTab does not claim ownership of any of these tools.</p>
+                </section>
+
+                <section class="tc-section">
+                    <h3>3. Copyright Compliance — Your Obligations</h3>
+                    <p class="tc-highlight">This section is critical. Non-compliance may result in immediate account suspension.</p>
+                    <p>You acknowledge and agree to the following:</p>
+                    <ul class="tc-list">
+                        <li><strong>You must own or have explicit permission to process any audio you upload.</strong> Uploading audio recordings to which you do not hold the copyright or a valid licence is prohibited.</li>
+                        <li><strong>InTab's transcription output (tablature) may itself be subject to copyright.</strong> Many musical compositions are protected by copyright independently of any recording. The right to reproduce a composition in tablature form belongs to the copyright holder, typically the songwriter or publisher.</li>
+                        <li><strong>Automated transcription does not constitute a licence.</strong> Generating tablature from a recording does not grant you the right to publish, distribute, or sell that tablature without the underlying copyright holder's permission.</li>
+                        <li><strong>URL-sourced audio (YouTube / TikTok)</strong> — when using InTab's URL input feature, you confirm that the content at the provided URL is material you have the right to process. InTab is not responsible for the copyright status of third-party content.</li>
+                        <li><strong>You may not circumvent rights management.</strong> Using InTab to extract, reproduce, or distribute copyrighted material in violation of the Berne Convention, the Copyright, Designs and Patents Act 1988, the Digital Millennium Copyright Act (DMCA), or any equivalent legislation in your jurisdiction is strictly prohibited.</li>
+                    </ul>
+                </section>
+
+                <section class="tc-section">
+                    <h3>4. Permitted Use</h3>
+                    <p>InTab is designed and intended for the following lawful purposes:</p>
+                    <ul class="tc-list">
+                        <li>Transcribing your own original compositions</li>
+                        <li>Processing recordings for which you hold a valid licence or explicit permission</li>
+                        <li>Educational and personal practice use of audio you own</li>
+                        <li>Research and development of guitar transcription methods</li>
+                    </ul>
+                </section>
+
+                <section class="tc-section">
+                    <h3>5. Prohibited Use</h3>
+                    <p>You may not use InTab to:</p>
+                    <ul class="tc-list">
+                        <li>Reproduce, distribute, or sell copyrighted recordings or compositions without authorisation</li>
+                        <li>Circumvent digital rights management (DRM) protections on any audio</li>
+                        <li>Infringe upon the moral or economic rights of any artist, composer, or publisher</li>
+                        <li>Operate any automated scraping or bulk-download pipeline against third-party platforms</li>
+                        <li>Use the Service in any manner that violates applicable local, national, or international law</li>
+                    </ul>
+                </section>
+
+                <section class="tc-section">
+                    <h3>6. Disclaimer of Liability</h3>
+                    <p>InTab is provided as an academic final-year project prototype. Transcription output is generated by a machine learning model and may be inaccurate. InTab is provided "as is" with no warranty of fitness for any particular purpose. The developers are not liable for any direct, indirect, or consequential loss arising from use of the Service or from copyright disputes arising from how you use the transcribed output.</p>
+                </section>
+
+                <section class="tc-section">
+                    <h3>7. Account Termination</h3>
+                    <p>InTab reserves the right to suspend or terminate any account found to be in breach of these Terms, particularly the copyright compliance obligations in Section 3, without prior notice.</p>
+                </section>
+
+                <section class="tc-section">
+                    <h3>8. Changes to These Terms</h3>
+                    <p>These Terms may be updated from time to time. Continued use of the Service following notice of changes constitutes acceptance of the revised Terms.</p>
+                </section>
+
+                <div class="tc-footer-note">
+                    By ticking the checkbox on the registration form, you confirm you have read, understood, and agreed to all terms above.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-modal-decline" id="declineTerms">Decline</button>
+                <button type="button" class="btn-modal-accept" id="acceptTerms">I Agree &amp; Accept</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // Load sidebar (same as other pages)
+        // ── Sidebar ──
         fetch('sidenav.html')
-            .then(r => {
-                if (!r.ok) throw new Error('Sidebar load failed');
-                return r.text();
-            })
+            .then(r => { if (!r.ok) throw new Error(); return r.text(); })
             .then(html => {
                 document.getElementById('sidebar-container').innerHTML = html;
-
-                // Update sidebar with user info
                 if (window.Auth) Auth.updateSidebar();
             })
-            .catch(err => {
-                console.error(err);
-                document.getElementById('sidebar-container').innerHTML =
-                    '<div style="color:#f33; padding:2rem; text-align:center;">Sidebar unavailable</div>';
+            .catch(() => {
+                document.getElementById('sidebar-container').innerHTML = '';
             });
 
-        // ── Your existing form logic (slightly cleaned) ──
-        const form = document.getElementById('signupForm');
-        const submitBtn = document.getElementById('submitBtn');
-        const successMsg = document.getElementById('successMessage');
+        // ── Password toggle ──
+        document.querySelectorAll('.toggle-pw').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const input = document.getElementById(btn.dataset.target);
+                input.type = input.type === 'password' ? 'text' : 'password';
+                btn.classList.toggle('active');
+            });
+        });
 
+        // ── Password strength ──
+        const pwInput = document.getElementById('password');
+        const strengthBar = document.getElementById('strengthBar');
+        const strengthLabel = document.getElementById('strengthLabel');
+
+        pwInput.addEventListener('input', () => {
+            const v = pwInput.value;
+            let score = 0;
+            if (v.length >= 6) score++;
+            if (v.length >= 10) score++;
+            if (/[A-Z]/.test(v)) score++;
+            if (/[0-9]/.test(v)) score++;
+            if (/[^A-Za-z0-9]/.test(v)) score++;
+
+            const levels = ['', 'Weak', 'Fair', 'Good', 'Strong', 'Very strong'];
+            const colors = ['', '#e22134', '#f59e0b', '#3b82f6', '#1db954', '#1db954'];
+            strengthBar.style.width = v.length ? `${score * 20}%` : '0';
+            strengthBar.style.background = colors[score] || '#333';
+            strengthLabel.textContent = v.length ? levels[score] : '';
+            strengthLabel.style.color = colors[score];
+        });
+
+        // ── Terms Modal ──
+        const modal = document.getElementById('termsModal');
+        const termsCheckbox = document.getElementById('terms');
+
+        document.getElementById('openTerms').addEventListener('click', () => {
+            modal.classList.add('open');
+            document.body.style.overflow = 'hidden';
+        });
+
+        function closeModal() {
+            modal.classList.remove('open');
+            document.body.style.overflow = '';
+        }
+
+        document.getElementById('closeTerms').addEventListener('click', closeModal);
+        document.getElementById('declineTerms').addEventListener('click', () => {
+            termsCheckbox.checked = false;
+            closeModal();
+        });
+        document.getElementById('acceptTerms').addEventListener('click', () => {
+            termsCheckbox.checked = true;
+            document.getElementById('termsError').classList.remove('show');
+            closeModal();
+        });
+
+        modal.addEventListener('click', e => {
+            if (e.target === modal) closeModal();
+        });
+
+        // ── Form validation ──
         function validateForm() {
             let valid = true;
 
-            // Full name
             const name = document.getElementById('fullName');
             const nameErr = document.getElementById('fullNameError');
             if (name.value.trim().length < 2) {
@@ -109,7 +295,6 @@
                 name.classList.remove('error'); nameErr.classList.remove('show');
             }
 
-            // Email
             const email = document.getElementById('email');
             const emailErr = document.getElementById('emailError');
             if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
@@ -118,7 +303,6 @@
                 email.classList.remove('error'); emailErr.classList.remove('show');
             }
 
-            // Password
             const pw = document.getElementById('password');
             const pwErr = document.getElementById('passwordError');
             if (pw.value.length < 6) {
@@ -127,7 +311,6 @@
                 pw.classList.remove('error'); pwErr.classList.remove('show');
             }
 
-            // Confirm
             const cpw = document.getElementById('confirmPassword');
             const cpwErr = document.getElementById('confirmPasswordError');
             if (cpw.value !== pw.value) {
@@ -136,15 +319,27 @@
                 cpw.classList.remove('error'); cpwErr.classList.remove('show');
             }
 
+            const termsErr = document.getElementById('termsError');
+            if (!termsCheckbox.checked) {
+                termsErr.classList.add('show'); valid = false;
+            } else {
+                termsErr.classList.remove('show');
+            }
+
             return valid;
         }
+
+        // ── Submit ──
+        const form = document.getElementById('signupForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const successMsg = document.getElementById('successMessage');
 
         form.addEventListener('submit', async e => {
             e.preventDefault();
             if (!validateForm()) return;
 
             submitBtn.disabled = true;
-            submitBtn.textContent = 'Creating...';
+            submitBtn.querySelector('.btn-text').textContent = 'Creating…';
 
             const data = {
                 username: document.getElementById('email').value.split('@')[0],
@@ -167,26 +362,24 @@
                     const err = await res.json();
                     alert(err.detail || 'Registration failed');
                 }
-            } catch (err) {
+            } catch {
                 alert('Network error – please try again');
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.textContent = 'Create Account';
+                submitBtn.querySelector('.btn-text').textContent = 'Create Account';
             }
         });
 
-        // Optional real-time feedback
-        document.getElementById('confirmPassword')?.addEventListener('input', function () {
+        // Real-time confirm password
+        document.getElementById('confirmPassword').addEventListener('input', function () {
             const pw = document.getElementById('password').value;
+            const err = document.getElementById('confirmPasswordError');
             if (this.value && this.value !== pw) {
-                this.classList.add('error');
-                document.getElementById('confirmPasswordError').classList.add('show');
+                this.classList.add('error'); err.classList.add('show');
             } else {
-                this.classList.remove('error');
-                document.getElementById('confirmPasswordError').classList.remove('show');
+                this.classList.remove('error'); err.classList.remove('show');
             }
         });
     </script>
 </body>
-
 </html>
