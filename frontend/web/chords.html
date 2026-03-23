@@ -400,7 +400,7 @@ async function handleUrlAnalyze() {
 
   try {
     // Step 1: Download audio via yt-dlp
-    const dlRes = await fetch('/upload/url', {
+    const dlRes = await fetch('/api/upload/url', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ url: rawUrl }),

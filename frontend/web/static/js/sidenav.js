@@ -15,11 +15,16 @@ fetch('sidenav.html')
     container.innerHTML = html;
 
     // Highlight current page in navigation
-    const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+    const currentPath = window.location.pathname.split('/').pop() || 'index.html';
+    const pageName = currentPath.replace('.html', '');
+    
     document.querySelectorAll('.nav-item').forEach(link => {
         const href = link.getAttribute('href');
-        if (href === currentPage || (currentPage === '' && href === 'index.html')) {
-            link.classList.add('active');
+        if (href) {
+            const linkPage = href.replace('.html', '');
+            if (linkPage === pageName) {
+                link.classList.add('active');
+            }
         }
     });
 
