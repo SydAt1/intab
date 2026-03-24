@@ -12,8 +12,6 @@
 </head>
 
 <body>
-    <div id="cr"></div>
-    <div id="cd"></div>
     <div id="prog"></div>
 
     <nav id="dots">
@@ -22,6 +20,7 @@
         <div class="dot" data-i="2"></div>
         <div class="dot" data-i="3"></div>
         <div class="dot" data-i="4"></div>
+        <div class="dot" data-i="5"></div>
     </nav>
 
     <header class="header">
@@ -194,8 +193,62 @@
             </div>
         </section>
 
-        <!-- ══ PANEL 5: EXPORT ══ -->
-        <section class="panel" id="p5">
+        <!-- ══ PANEL 5: QUIZ ══ -->
+        <section class="panel" id="p5q">
+            <div class="fn">04</div>
+            <div class="fc" style="padding-left:8%;padding-top:80px">
+                <p class="ftag rv d1">Ear Training</p>
+                <h2 class="fh2 rv d2">Test your<br><em>ears.</em><br>Level up.</h2>
+                <p class="fdesc rv d3">Challenge yourself with chord recognition quizzes, interval drills, and
+                    progression puzzles — all generated from real audio. Learn by listening, not memorising.</p>
+                <a href="quiz.html" class="flink rv d4">Start Quiz &rarr;</a>
+                <div class="key-bars rv d5" style="margin-top:1.8rem;max-width:300px">
+                    <div class="kr"><span class="klbl-q">Intervals</span>
+                        <div class="kbg-q">
+                            <div class="kb" style="--f:70%;--t:90%;--d:3.2s;--dl:0s;width:70%;background:var(--green)">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="kr"><span class="klbl-q">Chords</span>
+                        <div class="kbg-q">
+                            <div class="kb" style="--f:55%;--t:75%;--d:2.9s;--dl:.3s;width:55%;background:var(--green)">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="kr"><span class="klbl-q">Progressions</span>
+                        <div class="kbg-q">
+                            <div class="kb" style="--f:40%;--t:65%;--d:3.5s;--dl:.6s;width:40%;background:var(--green)">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="kr"><span class="klbl-q">Scales</span>
+                        <div class="kbg-q">
+                            <div class="kb" style="--f:30%;--t:55%;--d:2.7s;--dl:.9s;width:30%;background:var(--green)">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="quiz-viz rr d2">
+                <div class="quiz-card">
+                    <div class="quiz-label">What chord is this?</div>
+                    <div id="wf5q"></div>
+                    <div class="quiz-options" id="quiz-opts">
+                        <button class="qopt">Am</button>
+                        <button class="qopt qopt-correct">Dm</button>
+                        <button class="qopt">Em</button>
+                        <button class="qopt">Bm</button>
+                    </div>
+                    <div class="quiz-footer">
+                        <span class="quiz-streak" id="quiz-score">7</span>
+                        <span class="quiz-streak-lbl">/ 10 streak</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ══ PANEL 6: EXPORT ══ -->
+        <section class="panel" id="p6">
             <div class="p5-inner">
                 <div class="p5-head">
                     <p class="ftag rv d1" style="justify-content:center">Edit &amp; Export</p>
@@ -242,22 +295,33 @@
     <script src="/static/js/auth.js"></script>
     <script src="/static/js/sidenav.js"></script>
     <script>
-        // CURSOR
-        const cr = document.getElementById('cr'), cd = document.getElementById('cd');
-        let mx = 0, my = 0, rx = 0, ry = 0;
-        document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; cd.style.left = mx + 'px'; cd.style.top = my + 'px'; });
-        (function ca() { rx += (mx - rx) * .1; ry += (my - ry) * .1; cr.style.left = rx + 'px'; cr.style.top = ry + 'px'; requestAnimationFrame(ca); })();
-        document.querySelectorAll('a,button,.ec').forEach(el => {
-            el.addEventListener('mouseenter', () => { cr.style.transform = 'translate(-50%,-50%) scale(1.8)'; cr.style.background = 'rgba(29,185,84,0.1)'; });
-            el.addEventListener('mouseleave', () => { cr.style.transform = 'translate(-50%,-50%) scale(1)'; cr.style.background = 'none'; });
-        });
-
         // WAVEFORM (panel 2)
         function buildWF(id, cls, count) {
             const el = document.getElementById(id); if (!el) return;
             for (let i = 0; i < count; i++) { const b = document.createElement('div'); b.className = cls; const h = Math.random() * 52 + 6; b.style.cssText = `height:${h}px;--d:${.7 + Math.random() * 1.4}s;--dl:${Math.random() * 1.2}s`; el.appendChild(b); }
         }
         buildWF('wf2', 'ub', 32);
+        buildWF('wf5q', 'ub', 28);
+
+        // QUIZ interactions
+        (function () {
+            const opts = document.querySelectorAll('.qopt');
+            const scoreEl = document.getElementById('quiz-score');
+            let score = 7;
+            opts.forEach(btn => {
+                btn.addEventListener('click', function () {
+                    opts.forEach(b => b.classList.remove('qopt-selected', 'qopt-wrong'));
+                    if (this.classList.contains('qopt-correct')) {
+                        this.classList.add('qopt-selected');
+                        score = Math.min(10, score + 1);
+                    } else {
+                        this.classList.add('qopt-wrong');
+                        score = Math.max(0, score - 1);
+                    }
+                    if (scoreEl) scoreEl.textContent = score;
+                });
+            });
+        })();
 
         // FRETBOARD
         const activeCells = [[0, 1], [1, 2], [2, 3], [0, 4], [1, 5], [3, 6], [4, 0], [2, 7], [5, 3], [3, 8]];
