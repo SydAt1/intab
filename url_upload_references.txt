@@ -1,0 +1,46 @@
+References & Artefacts: URL Audio Upload Feature
+
+Here are the key libraries, APIs, and techniques used to implement the direct YouTube/TikTok URL upload feature in the InTab platform.
+
+--------------------------------------------------------------------------------
+1. Backend Core Libraries & Tools
+--------------------------------------------------------------------------------
+
+yt-dlp (Command Line Utility & Python Wrapper)
+* Purpose: The primary engine used to interact with YouTube, TikTok, and other video streaming platforms to extract their underlying audio streams.
+* How it was used: In src/tablature/upload_service.py, we execute a subprocess call to yt-dlp. We pass specific flags:
+  - --extract-audio: Discards the video stream to save bandwidth.
+  - --audio-format wav: Ensures the output is directly compatible with the librosa library used for ML analysis later.
+  - --max-filesize 50m: Prevents the server from downloading massive compilation videos.
+* Documentation: https://github.com/yt-dlp/yt-dlp
+
+subprocess (Python Standard Library)
+* Purpose: To safely invoke external command-line tools from within the Python backend.
+* How it was used: Used to run the compiled yt-dlp binary with our extracted URL. We captured stderr to programmatically detect specific HTTP errors like "Video unavailable" or "Private video" and return those as clean 400 Bad Request messages to the user.
+* Documentation: https://docs.python.org/3/library/subprocess.html
+
+Pydantic & FastAPI (Python Web Framework)
+* Purpose: To define the expected incoming data structure and rapidly generate a secure API endpoint.
+* How it was used: In src/api/routes/upload.py, we created the URLUploadRequest model extending Pydantic.BaseModel to ensure the incoming JSON securely contained a string "url" property.
+* Documentation: https://fastapi.tiangolo.com/tutorial/body/
+
+--------------------------------------------------------------------------------
+2. Frontend APIs & Techniques
+--------------------------------------------------------------------------------
+
+The URL API (MDN Web API)
+* Purpose: Native parsing and validation of web addresses in JavaScript.
+* How it was used: In tablature.html and chords.html, before sending any data to the server, we use `const parsed = new URL(rawUrl)`. 
+  - If the user enters raw text (e.g., "hello world"), the constructor throws a TypeError, letting us instantly show an error without hitting the backend.
+  - We specifically checked parsed.hostname against a Set of allowed domains (e.g., youtube.com, vm.tiktok.com) to prevent scraping attacks or unauthorized domain requests.
+* Documentation: https://developer.mozilla.org/en-US/docs/Web/API/URL
+
+The Fetch API (MDN Web API)
+* Purpose: Making asynchronous network requests to our backend endpoints.
+* How it was used: We use `await fetch('/upload/url', { method: 'POST', body: ... })` to send the validated URL sequentially. When the audio is downloaded and cached by the backend, it returns a file_path. Instead of downloading the file locally to the browser, we pass that file_path reference *back* into the existing /api/chords/recognize-from-path endpoint, chaining the operations seamlessly.
+* Documentation: https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
+
+CSS Segmented Control (Pill Tabs)
+* Purpose: UI pattern to switch between "Upload File" and "Paste URL" modes without leaving the page.
+* How it was used: We updated the upload-tab-toggle class to use a Flexbox container with `display: flex; flex: 1;`. We used JavaScript classList.toggle('active') to switch CSS states and toggle the default display states of the file dropzone vs the URL input field.
+* Documentation: Standard CSS Flexbox best practices modeled after Apple/Spotify premium segmented controls.

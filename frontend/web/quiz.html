@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chord Quiz | InTab</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300;0,400;0,600;0,700;0,800;0,900;1,300;1,800&family=Space+Mono:wght@400;700&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="/css/quiz.css" />
+</head>
+
+<body data-page="quiz">
+
+  <!-- Custom cursor -->
+  <div id="cr"></div>
+  <div id="cd"></div>
+
+  <!-- Loading overlay -->
+  <div id="loading-overlay">
+    <div class="lo-inner">
+      <div class="lo-ring"></div>
+      <span class="lo-text" id="loadingText">Loading…</span>
+    </div>
+  </div>
+
+  <div id="nav-wrap" style="position:fixed;top:0;left:0;bottom:0;z-index:999;height:100vh;">
+    <aside id="sidebar-container"></aside>
+  </div>
+
+  <div id="app">
+
+    <!-- ══════════════════════════════
+       LOBBY / DASHBOARD
+  ══════════════════════════════ -->
+    <div id="quiz-lobby" class="page-lobby">
+
+      <!-- LEFT col -->
+      <div class="lobby-left">
+        <p class="ftag">Ear Training Module</p>
+
+        <h1 class="lobby-h1">
+          <span class="thin">Read it.</span>
+          Name the <span class="accent">chord</span>.
+        </h1>
+
+        <p class="lobby-desc">
+          A fretboard shape appears. Four options. One is right.
+          <strong>Difficulty climbs as you do.</strong>
+        </p>
+
+        <button class="btn-primary" onclick="startQuiz()">
+          <span class="ico">&#9654;</span>Start Quiz
+        </button>
+
+        <div class="diff-legend">
+          <div class="diff-item"><span class="dl-dot green"></span><span class="dl-lbl">Beginner</span></div>
+          <div class="diff-item"><span class="dl-dot blue"></span><span class="dl-lbl">Intermediate</span></div>
+          <div class="diff-item"><span class="dl-dot dim"></span><span class="dl-lbl">Advanced</span></div>
+        </div>
+      </div>
+
+      <!-- RIGHT col: dashboard -->
+      <div class="lobby-right">
+        <div class="ghost-label">STATS</div>
+
+        <div class="pb-card">
+          <div class="pb-top">
+            <span class="pb-eyebrow">Personal Best</span>
+            <span class="pb-num" id="personalBestScore">—</span>
+          </div>
+          <div class="pb-bar-track">
+            <div class="pb-bar-fill" id="pbBarFill" style="width:0%"></div>
+          </div>
+          <span class="pb-sub" id="personalBestDate">No sessions recorded yet</span>
+        </div>
+
+        <div class="mini-row">
+          <div class="mini-stat">
+            <span class="mini-val" id="statSessions">0</span>
+            <span class="mini-lbl">Sessions</span>
+          </div>
+          <div class="mini-divider"></div>
+          <div class="mini-stat">
+            <span class="mini-val" id="statBestStreak">0</span>
+            <span class="mini-lbl">Best Streak</span>
+          </div>
+          <div class="mini-divider"></div>
+          <div class="mini-stat">
+            <span class="mini-val" id="statHighDiff">—</span>
+            <span class="mini-lbl">Highest Tier</span>
+          </div>
+        </div>
+
+        <div class="history-block">
+          <div class="history-head">
+            <span class="hh-line"></span>Recent Sessions
+          </div>
+          <div id="historyList" class="history-rows">
+            <div class="history-empty">Complete a quiz to see history</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ══════════════════════════════
+       QUESTION VIEW
+  ══════════════════════════════ -->
+    <div id="quiz-question" class="page-question" style="display:none">
+
+      <div class="hud-strip">
+        <div class="hud-cell">
+          <span class="hud-lbl">Score</span>
+          <span class="hud-val" id="qScore">0</span>
+        </div>
+        <div class="hud-center-cell">
+          <div class="diff-pill diff-beginner" id="qDifficulty">Beginner</div>
+          <div class="q-num" id="qCounter">Q 01</div>
+        </div>
+        <div class="hud-cell hud-right">
+          <span class="hud-lbl">Streak</span>
+          <span class="hud-val" id="qStreak">0</span>
+        </div>
+      </div>
+
+      <div class="prog-track">
+        <div class="prog-fill" id="progressFill" style="width:0%"></div>
+      </div>
+
+      <div class="question-body">
+        <div class="fb-panel">
+          <p class="ftag" style="animation:none;opacity:1;margin-bottom:1.4rem">Identify this chord</p>
+          <div class="fb-canvas-wrap">
+            <canvas id="quiz-fretboard" width="176" height="220"></canvas>
+          </div>
+          <div class="fb-string-labels">
+            <span>E</span><span>A</span><span>D</span><span>G</span><span>B</span><span>e</span>
+          </div>
+        </div>
+
+        <div class="opts-panel">
+          <p class="ftag" style="animation:none;opacity:1;margin-bottom:1.8rem">Choose one</p>
+          <div class="opts-grid" id="optionsGrid">
+            <button class="opt" id="opt-0" onclick="submitAnswer(0)">—</button>
+            <button class="opt" id="opt-1" onclick="submitAnswer(1)">—</button>
+            <button class="opt" id="opt-2" onclick="submitAnswer(2)">—</button>
+            <button class="opt" id="opt-3" onclick="submitAnswer(3)">—</button>
+          </div>
+          <button class="end-session-btn" onclick="endQuiz()">End Session ↗</button>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ══════════════════════════════
+       RESULTS VIEW
+  ══════════════════════════════ -->
+    <div id="quiz-results" class="page-results" style="display:none">
+      <div class="results-wrap">
+
+        <div class="results-left">
+          <p class="ftag" style="animation:none;opacity:1">Session Complete</p>
+          <h2 class="results-h2" id="resultsHeadline">Nice work.</h2>
+          <p class="results-sub">Here's how you did this round.</p>
+          <div class="results-actions">
+            <button class="btn-primary" onclick="startQuiz()">
+              <span class="ico">&#9654;</span>Play Again
+            </button>
+            <a class="btn-ghost" onclick="showLobby()">View Dashboard</a>
+          </div>
+        </div>
+
+        <div class="results-right">
+          <div class="ghost-label" style="right:auto;left:-1%">PTS</div>
+          <div class="score-hero">
+            <span class="score-num" id="resScore">0</span>
+            <span class="score-unit">pts</span>
+          </div>
+          <div class="res-stats">
+            <div class="res-stat">
+              <span class="rs-val" id="resStreak">0</span>
+              <span class="rs-lbl">Peak Streak</span>
+            </div>
+            <div class="rs-sep"></div>
+            <div class="res-stat">
+              <span class="rs-val" id="resCorrect">0/0</span>
+              <span class="rs-lbl">Correct</span>
+            </div>
+            <div class="rs-sep"></div>
+            <div class="res-stat">
+              <span class="rs-val" id="resDifficulty">—</span>
+              <span class="rs-lbl">Tier Reached</span>
+            </div>
+          </div>
+          <div class="pb-new-banner" id="pbBanner" style="display:none">🏆 &nbsp;New Personal Best</div>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- #app -->
+
+  <script src="/static/js/auth.js"></script>
+  <script src="/static/js/sidenav.js"></script>
+  <script src="/js/quiz.js"></script>
+  <script>
+    // Custom cursor — matches index.html exactly
+    const cr = document.getElementById('cr'), cd = document.getElementById('cd');
+    let mx = 0, my = 0, rx = 0, ry = 0;
+    document.addEventListener('mousemove', e => {
+      mx = e.clientX; my = e.clientY;
+      cd.style.left = mx + 'px'; cd.style.top = my + 'px';
+    });
+    (function ca() {
+      rx += (mx - rx) * .1; ry += (my - ry) * .1;
+      cr.style.left = rx + 'px'; cr.style.top = ry + 'px';
+      requestAnimationFrame(ca);
+    })();
+    document.querySelectorAll('a, button').forEach(el => {
+      el.addEventListener('mouseenter', () => {
+        cr.style.transform = 'translate(-50%,-50%) scale(1.8)';
+        cr.style.background = 'rgba(29,185,84,0.1)';
+      });
+      el.addEventListener('mouseleave', () => {
+        cr.style.transform = 'translate(-50%,-50%) scale(1)';
+        cr.style.background = 'none';
+      });
+    });
+  </script>
+</body>
+
+</html>

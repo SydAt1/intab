@@ -20,9 +20,10 @@ app.include_router(auth.router, prefix="/api")
 app.include_router(upload.router, prefix="/api")
 app.include_router(transcription.router, prefix="/api")
 app.include_router(fretboard_api.router)
-from src.api.routes import audio, chords
+from src.api.routes import audio, chords, quiz
 app.include_router(audio.router, prefix="/api")
 app.include_router(chords.router, prefix="/api")
+app.include_router(quiz.router, prefix="/api/quiz")
 
 @app.on_event("startup")
 async def startup_event():
