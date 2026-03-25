@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>History | InTab</title>
+    <meta name="description" content="View your chord visualization and tablature history on InTab." />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300;0,400;0,600;0,700;0,800;0,900;1,300;1,800&family=Space+Mono:wght@400;700&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="/css/history.css" />
+</head>
+
+<body data-page="history">
+
+    <!-- Loading overlay -->
+    <div id="loading-overlay">
+        <div class="lo-inner">
+            <div class="lo-ring"></div>
+            <span class="lo-text">Loading history…</span>
+        </div>
+    </div>
+
+    <!-- Ghost watermark -->
+    <div class="ghost-label">HISTORY</div>
+
+    <!-- Sidenav -->
+    <div id="nav-wrap" style="position:fixed;top:0;left:0;bottom:0;z-index:999;height:100vh;">
+        <aside id="sidebar-container"></aside>
+    </div>
+
+    <!-- Main content -->
+    <div class="history-page">
+
+        <!-- Hero Header -->
+        <header class="history-hero">
+            <p class="hero-eyebrow">Your Library</p>
+            <h1 class="history-h1">
+                <span class="thin">Everything you've</span>
+                <span class="accent">created</span>.
+            </h1>
+            <p class="history-desc">
+                Browse your past chord visualizations and tablature transcriptions.
+                Click any item to revisit the full view.
+            </p>
+        </header>
+
+        <!-- Sections container -->
+        <div id="sections-container">
+
+            <!-- ══ Chord Visualizations Section ══ -->
+            <section class="history-section" id="chords-section">
+                <div class="section-header">
+                    <div class="section-icon chords-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 18V5l12-2v13" />
+                            <circle cx="6" cy="18" r="3" />
+                            <circle cx="18" cy="16" r="3" />
+                        </svg>
+                    </div>
+                    <span class="section-title">Chord Visualizations</span>
+                    <span class="section-count" id="chords-count"></span>
+                    <div class="section-line"></div>
+                </div>
+                <div class="card-grid" id="chords-grid">
+                    <!-- Cards injected by JS -->
+                </div>
+            </section>
+
+            <!-- ══ Tablature Section ══ -->
+            <section class="history-section" id="tabs-section">
+                <div class="section-header">
+                    <div class="section-icon tabs-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                            <polyline points="17 8 12 3 7 8" />
+                            <line x1="12" y1="3" x2="12" y2="15" />
+                        </svg>
+                    </div>
+                    <span class="section-title">Tablature Transcriptions</span>
+                    <span class="section-count" id="tabs-count"></span>
+                    <div class="section-line"></div>
+                </div>
+                <div class="card-grid" id="tabs-grid">
+                    <!-- Cards injected by JS -->
+                </div>
+            </section>
+
+        </div>
+    </div>
+
+    <script src="/static/js/auth.js"></script>
+    <script src="/static/js/sidenav.js"></script>
+    <script src="/js/history.js"></script>
+</body>
+
+</html>
