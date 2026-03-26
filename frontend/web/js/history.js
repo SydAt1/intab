@@ -58,7 +58,7 @@
     function buildChordCard(item) {
         const card = document.createElement('a');
         card.className = 'history-card';
-        card.href = `chords.html?id=${encodeURIComponent(item.id)}`;
+        card.href = `/chords?id=${encodeURIComponent(item.id)}`;
 
         // Extract unique chord names for preview chips
         const chordNames = [];
@@ -101,7 +101,7 @@
     function buildTabCard(item) {
         const card = document.createElement('a');
         card.className = 'history-card';
-        card.href = `tablature.html?id=${encodeURIComponent(item.id)}`;
+        card.href = `/tablature?id=${encodeURIComponent(item.id)}`;
 
         card.innerHTML = `
             <div class="card-top">
@@ -175,7 +175,7 @@
             grid.appendChild(buildEmptyState(
                 'No chord visualizations yet.',
                 'Visualize your first chords',
-                'chords.html'
+                '/chords'
             ));
             return;
         }
@@ -195,7 +195,7 @@
             grid.appendChild(buildEmptyState(
                 'No tablature transcriptions yet.',
                 'Transcribe your first audio',
-                'tablature.html'
+                '/tablature'
             ));
             return;
         }

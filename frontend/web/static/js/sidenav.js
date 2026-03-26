@@ -1,9 +1,9 @@
 // CRITICAL: Require authentication before showing page
-// This will redirect to /login.html if user is not authenticated
+// This will redirect to /login if user is not authenticated
 Auth.requireLogin();
 
 // Load sidebar component
-fetch('sidenav.html')
+fetch('/sidenav')
 .then(response => {
     if (!response.ok) {
         throw new Error(`Failed to load sidebar: ${response.status} ${response.statusText}`);
@@ -15,16 +15,23 @@ fetch('sidenav.html')
     container.innerHTML = html;
 
     // Highlight current page in navigation
-    const currentPath = window.location.pathname.split('/').pop() || 'index.html';
-    const pageName = currentPath.replace('.html', '');
-    
+    const currentPath = window.location.pathname;
+    // Map pathname to page name for data-page matching
+    const pathToPage = {
+        '/': 'home',
+        '/tablature': 'upload',
+        '/fretboard': 'fretboard',
+        '/chords': 'chords',
+        '/quiz': 'quiz',
+        '/output-editing': 'output',
+        '/history': 'history'
+    };
+    const currentPage = pathToPage[currentPath] || '';
+
     document.querySelectorAll('.nav-item').forEach(link => {
-        const href = link.getAttribute('href');
-        if (href) {
-            const linkPage = href.replace('.html', '');
-            if (linkPage === pageName) {
-                link.classList.add('active');
-            }
+        const page = link.getAttribute('data-page');
+        if (page && page === currentPage) {
+            link.classList.add('active');
         }
     });
 

@@ -10,7 +10,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="css/login.css">
+    <link rel="stylesheet" href="/css/login.css">
 </head>
 
 <body>
@@ -64,7 +64,7 @@
 
             <div class="form-footer">
                 <span class="form-footer-text">Don't have an account?</span>
-                <a href="/register.html" class="form-footer-link">Register here</a>
+                <a href="/register" class="form-footer-link">Register here</a>
             </div>
         </div>
     </div>
@@ -164,7 +164,7 @@
                     sessionStorage.removeItem('redirect_after_login');
 
                     // Redirect to intended page or default to fretboard
-                    window.location.href = redirectUrl || '/fretboard.html';
+                    window.location.href = redirectUrl || '/fretboard';
 
                 } else {
                     // Show error message
@@ -229,7 +229,7 @@
         // Check if user is already logged in
         if (Auth.isAuthenticated()) {
             // Already logged in, redirect to app
-            const redirectUrl = sessionStorage.getItem('redirect_after_login') || '/fretboard.html';
+            const redirectUrl = sessionStorage.getItem('redirect_after_login') || '/fretboard';
             sessionStorage.removeItem('redirect_after_login');
             window.location.href = redirectUrl;
         }

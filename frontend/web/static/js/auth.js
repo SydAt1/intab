@@ -64,7 +64,7 @@ const Auth = {
         if (!token && !sessionId) {
             if (redirectIfInvalid) {
                 sessionStorage.setItem('redirect_after_login', window.location.pathname);
-                window.location.href = '/login.html';
+                window.location.href = '/login';
             }
             return null;
         }
@@ -84,7 +84,7 @@ const Auth = {
                     Auth.clearAuth();
                     if (redirectIfInvalid) {
                         sessionStorage.setItem('redirect_after_login', window.location.pathname);
-                        window.location.href = '/login.html';
+                        window.location.href = '/login';
                     }
                 }
                 return null;
@@ -147,7 +147,7 @@ const Auth = {
             if (authText && authIcon && authLink) {
                 authText.textContent = "Login";
                 authIcon.textContent = "🔑";
-                authLink.href = "login.html";
+                authLink.href = "/login";
                 authLink.onclick = null;
             }
         }
@@ -186,7 +186,7 @@ const Auth = {
         }
 
         // Redirect to home page
-        window.location.href = '/index.html';
+        window.location.href = '/';
     }
 };
 
