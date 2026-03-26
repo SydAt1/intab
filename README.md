@@ -1,6 +1,6 @@
 # Audio Tablature Studio
 
-A comprehensive full-stack web application designed for guitarists and musicians. This application allows users to upload audio files, isolate the guitar tracks, transcribe the audio into precise guitar tablature, and recognize chords—all powered by advanced deep learning models.
+A comprehensive full-stack web application designed for guitarists and musicians. This application allows users to upload audio files, isolate the guitar tracks, transcribe the audio into precise guitar tablature, and recognize chords, all powered by advanced deep learning models.
 
 ## 🚀 Key Features
 
@@ -26,6 +26,7 @@ A comprehensive full-stack web application designed for guitarists and musicians
 
 ### Frontend
 * **Core:** HTML5, CSS3, Vanilla JavaScript
+* **Templating:** Jinja2 (served via FastAPI `TemplateResponse` with clean URLs)
 * **Styling:** Custom "Premium Dark" aesthetic with flex/grid layouts and CSS animations
 * **Architecture:** Component-based UI with dynamic DOM manipulation (Sidebar injections, interactive scroll-snapping)
 
@@ -35,14 +36,18 @@ A comprehensive full-stack web application designed for guitarists and musicians
 
 ```text
 ├── frontend/
-│   └── web/                 # Static HTML/CSS/JS assets for the UI and components
+│   └── web/
+│       ├── templates/       # Jinja2 HTML templates (served via clean URL routes)
+│       ├── css/             # Stylesheets (mounted at /css)
+│       ├── js/              # Page-specific JS modules (mounted at /js)
+│       └── static/          # Shared JS utilities & assets (mounted at /static)
 ├── src/
 │   ├── api/                 # FastAPI route implementations (auth, upload, audio, transcription, chords)
 │   ├── core/                # Core configuration, environment variables, security
 │   ├── db/                  # SQLAlchemy models and MinIO storage configuration
 │   ├── fretboard/           # Visualization logic and ML models for the guitar fretboard
 │   ├── tablature/           # Transcription logic and CRNN model inference
-│   ├── app.py               # FastAPI application factory and router registration
+│   ├── app.py               # FastAPI app factory, Jinja2 template routes, static mounts
 │   └── main.py              # CLI Bootstrap
 ├── test/                    # Unit testing and validation scripts
 ├── .env                     # Environment variables (Credentials & Config)
@@ -83,7 +88,7 @@ Launch the Uvicorn development server:
 ```bash
 uvicorn src.app:app --reload --host 0.0.0.0 --port 8000
 ```
-* **Frontend UI**: `http://localhost:8000/` (Static assets are mounted at the root URL)
+* **Frontend UI**: `http://localhost:8000/` (pages served via Jinja2 at clean URLs, e.g. `/chords`, `/tablature`)
 * **API Documentation (Swagger UI)**: `http://localhost:8000/docs`
 
 ---
@@ -92,8 +97,4 @@ uvicorn src.app:app --reload --host 0.0.0.0 --port 8000
 * **Reverse Proxy:** For production environments, run Uvicorn behind a reverse proxy such as Nginx.
 * **Process Manager:** Utilize a process manager like Gunicorn with Uvicorn worker classes to handle production traffic safely.
 * **Environment Security:** Never commit `.env` files containing sensitive database or S3 credentials to version control.
-
-## 🤝 Contributing
-1. Open an issue to discuss proposed feature requests or potential bugs.
-2. Submit a Pull Request containing a clear description of the changes and the rationale behind them.
 
