@@ -242,7 +242,7 @@ header {
 .track-meta { font-size: 13px; color: var(--muted); margin-top: 4px; }
 .track-stats { display: flex; gap: 16px; margin-top: 10px; }
 .stat { font-size: 12px; color: var(--subtext); }
-.stat span { color: var(--accent); font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+.stat span { color: var(--accent); font-family: 'Space Mono', monospace; font-size: 13px; }
 
 /* ── Audio player ── */
 .player-section {
@@ -264,7 +264,7 @@ header {
 .btn-play:active { transform: scale(0.96); }
 .btn-play svg { width: 20px; height: 20px; fill: #000; }
 .time-display {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Space Mono', monospace;
   font-size: 13px; color: var(--muted);
   min-width: 90px;
 }
@@ -300,7 +300,7 @@ header {
 .section-title { font-family: 'Figtree', sans-serif; font-size: 18px; font-weight: 600; }
 .badge {
   background: #1db95420; color: var(--accent);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Space Mono', monospace;
   font-size: 11px; padding: 4px 10px; border-radius: 100px;
   border: 1px solid #1db95430;
 }
@@ -361,8 +361,8 @@ header {
   color: var(--text); line-height: 1;
 }
 .chord-pill.active .chord-root { color: var(--accent2); }
-.chord-quality { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); margin-top: 4px; }
-.chord-time { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: #ffffff25; margin-top: 6px; }
+.chord-quality { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--muted); margin-top: 4px; }
+.chord-time { font-family: 'Space Mono', monospace; font-size: 9px; color: #ffffff25; margin-top: 6px; }
 .chord-pill.active .chord-time { color: #1db95480; }
 .chord-active-bar {
   position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
@@ -404,7 +404,7 @@ canvas#fretboard { display: block; }
   transition: all .25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 .current-chord-quality {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Space Mono', monospace;
   font-size: 18px; color: var(--muted);
   transition: all .25s ease;
 }
@@ -437,7 +437,7 @@ canvas#waveform { width: 100%; height: 64px; display: block; border-radius: 8px;
 }
 .segment-block {
   height: 100%; display: flex; align-items: center; justify-content: center;
-  font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 500;
+  font-family: 'Space Mono', monospace; font-size: 10px; font-weight: 500;
   color: #000; transition: filter .2s;
   overflow: hidden; white-space: nowrap; padding: 0 2px; cursor: pointer;
 }
@@ -464,7 +464,7 @@ canvas#waveform { width: 100%; height: 64px; display: block; border-radius: 8px;
   animation: spin .8s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
-.loading-text { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--muted); }
+.loading-text { font-family: 'Space Mono', monospace; font-size: 13px; color: var(--muted); }
 
 /* ── Toast ── */
 .toast {

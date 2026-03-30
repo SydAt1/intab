@@ -5,8 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>InTab – Chord Visualizer</title>
   <link rel="icon" type="image/png" href="/static/favicon.png">
-  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300;0,400;0,600;0,700;0,800;0,900;1,300;1,800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/css/chords.css" />
+  <link rel="stylesheet" href="/css/app-header.css" />
 </head>
 <body>
 
@@ -24,10 +25,15 @@
   
   <div class="app-container">
   <!-- Header -->
-  <header>
-    <div class="logo">
-      <div class="logo-dot"></div>
-      InTab
+  <header class="app-header">
+    <div class="header-logo">
+      <div class="header-logo-mark">
+        <svg viewBox="0 0 16 16" fill="none">
+          <rect x="7" y="1" width="2" height="14" fill="#000" />
+          <circle cx="8" cy="4" r="2.5" fill="#000" />
+        </svg>
+      </div>
+      <span class="header-wordmark">intab</span>
     </div>
   </header>
 
@@ -182,7 +188,7 @@
         <div class="waveform-section">
           <div style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
             <span style="font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:1px;">Timeline</span>
-            <span style="font-family:'DM Mono',monospace; font-size:12px; color:var(--muted);" id="timeDisplay">0:00 / 0:00</span>
+            <span style="font-family:'Space Mono', monospace; font-size:12px; color:var(--muted);" id="timeDisplay">0:00 / 0:00</span>
           </div>
           <div class="waveform-canvas-wrap">
             <canvas id="waveform" height="64"></canvas>

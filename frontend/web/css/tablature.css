@@ -493,7 +493,7 @@ body {
 }
 
 .tab-lines {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Space Mono', monospace;
     font-size: 12px;
     color: var(--text3);
     line-height: 1.8;
@@ -649,7 +649,7 @@ body {
 }
 
 .tab-content {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Space Mono', monospace;
     font-size: 13px;
     line-height: 1.8;
     color: var(--text);
@@ -903,13 +903,13 @@ body {
 }
 
 .trim-time-label {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Space Mono', monospace;
     font-size: 11px;
     color: var(--text2);
 }
 
 .trim-time-selection {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Space Mono', monospace;
     font-size: 11px;
     color: var(--trim-yellow);
     font-weight: 700;
@@ -922,7 +922,7 @@ body {
     transform: translate(-50%, -50%);
     background: var(--trim-yellow);
     color: #000;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Space Mono', monospace;
     font-size: 10px;
     font-weight: 700;
     padding: 2px 7px;
