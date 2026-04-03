@@ -666,17 +666,35 @@
 
                 const data = await res.json();
 
-                showStatus('Audio fetched & processed — click Generate Tablature', 'success');
-                btnText.textContent = '✓ Fetched';
+                showStatus('Audio fetched! Preparing for transcription...', 'loading');
+                btnText.textContent = '⏳ Uploading…';
 
-                // Enable transcribe with a pseudo audioId from file_path
-                // The transcription endpoint uses file_path, so store it similarly
-                currentAudioId = data.file_path;
+                // Convert file_path into a valid AudioFile record via our new endpoint
+                const token = (typeof Auth !== 'undefined' && Auth.getToken?.()) || localStorage.getItem('access_token') || '';
+                const tabName = document.getElementById('tabNameInput').value.trim();
+                
+                const uploadRes = await fetch('/api/audio/upload-from-path', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify({ file_path: data.file_path, tab_name: tabName })
+                });
+
+                if (!uploadRes.ok) throw new Error("Failed to register fetched audio track");
+                const uploadData = await uploadRes.json();
+
+                btnText.textContent = '✓ Ready';
+                showStatus('Automatically starting transcription...', 'loading');
+                
+                currentAudioId = uploadData.id;
                 document.getElementById('transcribeBtn').disabled = false;
+                loadHistory();
+
+                // Automatically kick off transcription
+                await handleTranscribe();
 
             } catch (err) {
                 showUrlError(err.message);
-                showStatus('Fetch failed: ' + err.message, 'error');
+                showStatus('Process failed: ' + err.message, 'error');
                 btn.disabled = false;
                 btnText.textContent = '🔗 Fetch & Transcribe';
             }

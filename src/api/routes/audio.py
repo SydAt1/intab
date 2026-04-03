@@ -14,6 +14,12 @@ from src.db.tablature_model import Tablature
 from src.api.dependencies import get_current_user
 from src.core import minio_client
 
+from pydantic import BaseModel
+
+class PathUploadRequest(BaseModel):
+    file_path: str
+    tab_name: Optional[str] = None
+
 # Transcription services
 from src.tablature.upload_service import process_upload
 from src.tablature.service import transcribe_audio
@@ -94,6 +100,58 @@ async def upload_audio_file(
         id=file_id,
         user_id=current_user.id,
         original_filename=file.filename,
+        storage_key=storage_key,
+        file_size_bytes=file_size,
+        tab_name=final_tab_name,
+        status="pending"
+    )
+    
+    db.add(new_audio)
+    db.commit()
+    db.refresh(new_audio)
+    
+    return {
+        "id": new_audio.id,
+        "original_filename": new_audio.original_filename,
+        "tab_name": new_audio.tab_name,
+        "status": new_audio.status,
+        "uploaded_at": new_audio.uploaded_at
+    }
+
+@router.post("/upload-from-path")
+async def upload_audio_from_path(
+    payload: PathUploadRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Uploads a server-local file (e.g., from URL fetch) to MinIO and creates a DB record."""
+    if not os.path.exists(payload.file_path):
+        raise HTTPException(status_code=400, detail="File not found")
+        
+    with open(payload.file_path, "rb") as f:
+        file_bytes = f.read()
+        
+    file_size = len(file_bytes)
+    if file_size > MAX_FILE_SIZE:
+        raise HTTPException(status_code=400, detail="File too large. Maximum size is 50MB.")
+        
+    file_id = str(uuid.uuid4())
+    original_filename = os.path.basename(payload.file_path)
+    _, ext = os.path.splitext(original_filename)
+    if not ext:
+        ext = ".wav"
+        
+    storage_key = f"uploads/{current_user.id}/{file_id}{ext}"
+    content_type = "audio/wav" if ext.lower() == ".wav" else "audio/mpeg"
+    
+    minio_client.upload_audio(file_bytes, storage_key, content_type)
+    
+    final_tab_name = payload.tab_name if payload.tab_name else original_filename.rsplit(".", 1)[0]
+    
+    new_audio = AudioFile(
+        id=file_id,
+        user_id=current_user.id,
+        original_filename=original_filename,
         storage_key=storage_key,
         file_size_bytes=file_size,
         tab_name=final_tab_name,
