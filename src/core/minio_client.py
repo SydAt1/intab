@@ -4,6 +4,7 @@ from src.core.config import (
     MINIO_ENDPOINT,
     MINIO_ACCESS_KEY,
     MINIO_SECRET_KEY,
+    AWS_SESSION_TOKEN,
     MINIO_BUCKET
 )
 import logging
@@ -11,14 +12,20 @@ import logging
 logger = logging.getLogger(__name__)
 
 def get_boto3_client():
-    """Returns a connected boto3 client for MinIO."""
-    return boto3.client(
-        's3',
-        endpoint_url=MINIO_ENDPOINT,
-        aws_access_key_id=MINIO_ACCESS_KEY,
-        aws_secret_access_key=MINIO_SECRET_KEY,
-        region_name='us-east-1' # Required for boto3, though MinIO ignores it often
-    )
+    """Returns a connected boto3 client for MinIO or AWS S3."""
+    kwargs = {
+        'aws_access_key_id': MINIO_ACCESS_KEY,
+        'aws_secret_access_key': MINIO_SECRET_KEY,
+        'region_name': 'us-east-1'
+    }
+    
+    if AWS_SESSION_TOKEN:
+        kwargs['aws_session_token'] = AWS_SESSION_TOKEN
+        
+    if MINIO_ENDPOINT and 'amazonaws.com' not in MINIO_ENDPOINT:
+        kwargs['endpoint_url'] = MINIO_ENDPOINT
+
+    return boto3.client('s3', **kwargs)
 
 def ensure_bucket_exists():
     """Creates the bucket on startup if it doesn't exist."""

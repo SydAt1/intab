@@ -14,11 +14,12 @@ DATABASE_URL = (
     f"@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 )
 
-SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret")
-ALGORITHM = "HS256"
+SECRET_KEY = os.getenv("SECRET_KEY", "")
+ALGORITHM = os.getenv("ALGORITHM", "HS256")
 
 # MinIO
 MINIO_ENDPOINT   = os.getenv("MINIO_ENDPOINT", "http://localhost:9000")
 MINIO_ACCESS_KEY = os.getenv("MINIO_ACCESS_KEY", "minioadmin")
 MINIO_SECRET_KEY = os.getenv("MINIO_SECRET_KEY", "minioadmin")
 MINIO_BUCKET     = os.getenv("MINIO_BUCKET", "intab-audio")
+AWS_SESSION_TOKEN = os.getenv("AWS_SESSION_TOKEN", None)
