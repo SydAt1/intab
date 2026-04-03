@@ -25,7 +25,7 @@
     </header>
 
     <div class="app-container">
-        <aside id="sidebar-container"></aside>
+
 
         <main class="login-content">
             <!-- Ambient glow -->
@@ -86,16 +86,7 @@
 
     <script src="/static/js/auth.js"></script>
     <script>
-        // ── Sidebar ──
-        fetch('/sidenav')
-            .then(r => { if (!r.ok) throw new Error(); return r.text(); })
-            .then(html => {
-                document.getElementById('sidebar-container').innerHTML = html;
-                if (window.Auth && Auth.isAuthenticated()) Auth.updateSidebar();
-            })
-            .catch(() => {
-                document.getElementById('sidebar-container').innerHTML = '';
-            });
+
 
         // ── Password toggle ──
         document.querySelectorAll('.toggle-pw').forEach(btn => {

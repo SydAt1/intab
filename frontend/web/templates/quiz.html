@@ -9,15 +9,13 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300;0,400;0,600;0,700;0,800;0,900;1,300;1,800&family=Space+Mono:wght@400;700&display=swap"
     rel="stylesheet" />
-  <link rel="stylesheet" href="/css/quiz.css" />
-  <link rel="stylesheet" href="/css/app-header.css" />
+  <link rel="stylesheet" href="/css/quiz.css?v=1.1" />
+  <link rel="stylesheet" href="/css/app-header.css?v=1.1" />
 </head>
 
 <body data-page="quiz">
 
-  <!-- Custom cursor -->
-  <div id="cr"></div>
-  <div id="cd"></div>
+
 
   <!-- Loading overlay -->
   <div id="loading-overlay">
@@ -218,30 +216,7 @@
   <script src="/static/js/auth.js"></script>
   <script src="/static/js/sidenav.js"></script>
   <script src="/js/quiz.js"></script>
-  <script>
-    // Custom cursor — matches index.html exactly
-    const cr = document.getElementById('cr'), cd = document.getElementById('cd');
-    let mx = 0, my = 0, rx = 0, ry = 0;
-    document.addEventListener('mousemove', e => {
-      mx = e.clientX; my = e.clientY;
-      cd.style.left = mx + 'px'; cd.style.top = my + 'px';
-    });
-    (function ca() {
-      rx += (mx - rx) * .1; ry += (my - ry) * .1;
-      cr.style.left = rx + 'px'; cr.style.top = ry + 'px';
-      requestAnimationFrame(ca);
-    })();
-    document.querySelectorAll('a, button').forEach(el => {
-      el.addEventListener('mouseenter', () => {
-        cr.style.transform = 'translate(-50%,-50%) scale(1.8)';
-        cr.style.background = 'rgba(29,185,84,0.1)';
-      });
-      el.addEventListener('mouseleave', () => {
-        cr.style.transform = 'translate(-50%,-50%) scale(1)';
-        cr.style.background = 'none';
-      });
-    });
-  </script>
+
 </body>
 
 </html>
