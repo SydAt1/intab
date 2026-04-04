@@ -84,10 +84,10 @@ def separate_guitar(file_path: str, output_dir: str) -> str:
     return guitar_stem_path
 
 
-def preprocess_audio(file_path: str, output_path: str, target_sr: int = 22050) -> str:
+def preprocess_audio(file_path: str, output_path: str, target_sr: int = 44100) -> str:
     """
     Normalize and resample audio to target sample rate.
-    Call this after guitar separation to clean up the stem before transcription.
+    Must use sr=44100 to match CRNN model's CQT feature extraction.
     """
     y, sr = librosa.load(file_path, sr=target_sr)
     y = librosa.util.normalize(y)

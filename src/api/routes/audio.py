@@ -61,7 +61,7 @@ async def upload_audio_file(
             from io import BytesIO
             
             # Load audio from bytes
-            y, sr = librosa.load(BytesIO(file_bytes), sr=22050)
+            y, sr = librosa.load(BytesIO(file_bytes), sr=44100)
             
             # Convert timestamps to samples
             start_sample = int(trim_start * sr)
