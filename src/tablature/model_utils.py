@@ -9,6 +9,11 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 import torch.nn as nn
 
 class GuitarTabCRNN(nn.Module):
+    """
+    Categorical CRNN for guitar tablature transcription.
+    Output: (batch, time_frames, 6 strings, 26 classes)
+    Classes 0-24 = fret numbers, class 25 = silent/no note.
+    """
     def __init__(self, n_bins=96):
         super().__init__()
         self.cnn = nn.Sequential(
@@ -23,14 +28,15 @@ class GuitarTabCRNN(nn.Module):
         )
         reduced = n_bins // 8
         self.rnn = nn.GRU(256 * reduced, 256, num_layers=2, bidirectional=True, batch_first=True, dropout=0.3)
-        self.fc = nn.Linear(512, 156)
+        self.fc = nn.Linear(512, 6 * 26)
 
     def forward(self, x):
         b, _, _, t = x.shape
         x = self.cnn(x)
         x = x.permute(0, 3, 1, 2).contiguous().view(b, t, -1)
         x, _ = self.rnn(x)
-        return self.fc(x)  # logits
+        x = self.fc(x)
+        return x.view(b, t, 6, 26)  # (batch, time, 6 strings, 26 classes)
 
 def load_model():
     """Loads the CRNN model."""
@@ -72,10 +78,11 @@ def extract_features(audio_path, sr=44100, hop_length=512, n_bins=96, bins_per_o
     time_per_frame = hop_length / sr
     return tensor, sr, time_per_frame
 
-def predict_notes(model, audio_path, threshold=0.5, min_duration_sec=0.08):
+def predict_notes(model, audio_path, min_duration_sec=0.05):
     """
-    Runs inference and converts model output to list of note dicts.
-    Returns format: [{'string': 1-6, 'fret': 0-24, 'onset': float, 'duration': float}, ...]
+    Runs inference using categorical argmax (matching training notebook).
+    Classes 0-24 = fret numbers, class 25 = silent.
+    Returns: [{'string': 1-6, 'fret': 0-24, 'onset': float, 'duration': float}, ...]
     """
     features, sr, time_per_frame = extract_features(audio_path)
     
@@ -85,11 +92,12 @@ def predict_notes(model, audio_path, threshold=0.5, min_duration_sec=0.08):
         
     with torch.no_grad():
         try:
-            logits = model(features).cpu().numpy().squeeze(0)  # (T, 150)
-            probs = 1 / (1 + np.exp(-logits))  # sigmoid
-            return _parse_predictions(probs, time_per_frame, threshold, min_duration_sec)
+            logits = model(features)  # (1, T, 6, 26)
+            # Select highest probability class per string per frame
+            preds = torch.argmax(logits, dim=-1).cpu().numpy().squeeze(0)  # (T, 6)
+            return _parse_predictions(preds, time_per_frame, min_duration_sec)
         except Exception as e:
-            print(f"Inference failed (likely shape mismatch or missing CRNN logic): {e}")
+            print(f"Inference failed: {e}")
             print("Returning dummy notes for demonstration.")
             return _get_dummy_notes()
 
@@ -103,41 +111,41 @@ def _get_dummy_notes():
         {'string': 6, 'fret': 0, 'onset': 3.0, 'duration': 0.5},
     ]
 
-def _parse_predictions(probs, time_per_frame, threshold=0.5, min_duration_sec=0.08):
-    probs_3d = probs.reshape(-1, 6, 26)
-    
-    # Per-string: only strongest fret
-    active_frets = np.argmax(probs_3d, axis=2)           # (T, 6)
-    max_probs = np.max(probs_3d, axis=2)                 # (T, 6)
-    mask = max_probs > threshold
-
+def _parse_predictions(preds, time_per_frame, min_duration_sec=0.05):
+    """
+    Parse categorical predictions into note events.
+    preds: (T, 6) array where each value is 0-24 (fret) or 25 (silent).
+    """
     notes = []
     for s in range(6):
-        prev_fret = -1
-        start = -1
-        for t in range(len(mask)):
-            fret = active_frets[t, s] if mask[t, s] else -1
-            if fret != prev_fret:
-                if prev_fret != -1:
-                    duration = (t - start) * time_per_frame
+        prev_fret = 25  # Start in "silent" state
+        start_frame = -1
+
+        for t in range(len(preds)):
+            current_fret = preds[t, s]
+
+            if current_fret != prev_fret:
+                # Close previous note if it was not silent
+                if prev_fret != 25:
+                    duration = (t - start_frame) * time_per_frame
                     if duration >= min_duration_sec:
                         notes.append({
                             'string': s + 1,
                             'fret': int(prev_fret),
-                            'onset': float(start * time_per_frame),
+                            'onset': float(start_frame * time_per_frame),
                             'duration': float(duration)
                         })
-                if fret != -1:
-                    start = t
-                prev_fret = fret
-        # Close final note
-        if prev_fret != -1:
-            duration = (len(mask) - start) * time_per_frame
+                start_frame = t
+                prev_fret = current_fret
+
+        # Close any final note at end of track
+        if prev_fret != 25:
+            duration = (len(preds) - start_frame) * time_per_frame
             if duration >= min_duration_sec:
                 notes.append({
                     'string': s + 1,
                     'fret': int(prev_fret),
-                    'onset': float(start * time_per_frame),
+                    'onset': float(start_frame * time_per_frame),
                     'duration': float(duration)
                 })
 
