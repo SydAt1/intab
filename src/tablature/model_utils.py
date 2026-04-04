@@ -23,7 +23,7 @@ class GuitarTabCRNN(nn.Module):
         )
         reduced = n_bins // 8
         self.rnn = nn.GRU(256 * reduced, 256, num_layers=2, bidirectional=True, batch_first=True, dropout=0.3)
-        self.fc = nn.Linear(512, 150)
+        self.fc = nn.Linear(512, 156)
 
     def forward(self, x):
         b, _, _, t = x.shape
@@ -104,7 +104,7 @@ def _get_dummy_notes():
     ]
 
 def _parse_predictions(probs, time_per_frame, threshold=0.5, min_duration_sec=0.08):
-    probs_3d = probs.reshape(-1, 6, 25)
+    probs_3d = probs.reshape(-1, 6, 26)
     
     # Per-string: only strongest fret
     active_frets = np.argmax(probs_3d, axis=2)           # (T, 6)
