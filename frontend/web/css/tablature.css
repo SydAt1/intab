@@ -93,6 +93,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 16px;
+    min-width: 0;
 }
 
 .section-card {
@@ -645,7 +646,8 @@ body {
     border-radius: var(--radius-sm);
     padding: 16px;
     overflow: auto;
-    max-height: 340px;
+    max-height: 500px;
+    min-width: 0;
 }
 
 .tab-content {
@@ -655,6 +657,7 @@ body {
     color: var(--text);
     white-space: pre;
     outline: none;
+    min-width: max-content;
 }
 
 .tab-content.editing {
