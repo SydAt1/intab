@@ -145,6 +145,37 @@ async def get_my_chords(
         })
     return results
 
+@router.delete("/{chord_audio_id}")
+async def delete_chord_record(
+    chord_audio_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Permanently deletes a chord recognition, its audio from MinIO, and DB records."""
+    audio_record = db.query(AudioFile).filter(
+        AudioFile.id == chord_audio_id,
+        AudioFile.user_id == current_user.id
+    ).first()
+
+    if not audio_record:
+        raise HTTPException(status_code=404, detail="Chord record not found")
+
+    # Delete related chord data
+    chord_record = db.query(Chord).filter(Chord.audio_file_id == chord_audio_id).first()
+    if chord_record:
+        db.delete(chord_record)
+
+    # Delete file from MinIO
+    try:
+        minio_client.delete_audio(audio_record.storage_key)
+    except Exception:
+        pass
+
+    # Delete the audio record
+    db.delete(audio_record)
+    db.commit()
+
+    return {"deleted": True, "id": chord_audio_id}
 
 from pydantic import BaseModel
 from typing import Optional

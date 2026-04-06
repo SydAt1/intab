@@ -466,4 +466,198 @@ body {
     .ghost-label {
         display: none;
     }
+
+    /* Always show delete buttons on mobile (no hover) */
+    .card-delete-btn {
+        opacity: 1;
+    }
 }
+
+/* ── Card Top Actions ── */
+.card-top-actions {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    flex-shrink: 0;
+}
+
+/* ── Delete Button ── */
+.card-delete-btn {
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: transparent;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity .25s var(--ease),
+                background .2s var(--ease),
+                transform .2s var(--ease);
+    padding: 0;
+    color: rgba(255, 255, 255, .3);
+}
+
+.card-delete-btn svg {
+    width: 14px;
+    height: 14px;
+}
+
+.history-card:hover .card-delete-btn {
+    opacity: 1;
+}
+
+.card-delete-btn:hover {
+    background: rgba(239, 83, 80, .12);
+    color: #ef5350;
+    transform: scale(1.1);
+}
+
+.card-delete-btn:active {
+    transform: scale(.95);
+}
+
+/* ── Delete Confirmation Modal ── */
+.delete-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .3s var(--ease);
+}
+
+.delete-modal.open {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.delete-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, .65);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+
+.delete-modal-dialog {
+    position: relative;
+    background: #141418;
+    border: 1px solid rgba(255, 255, 255, .08);
+    border-radius: 20px;
+    padding: 2.4rem 2.2rem 2rem;
+    max-width: 380px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, .6);
+    transform: scale(.92) translateY(12px);
+    transition: transform .35s var(--ease);
+}
+
+.delete-modal.open .delete-modal-dialog {
+    transform: scale(1) translateY(0);
+}
+
+.delete-modal-icon {
+    width: 50px;
+    height: 50px;
+    margin: 0 auto 1.2rem;
+    border-radius: 14px;
+    background: rgba(239, 83, 80, .1);
+    border: 1px solid rgba(239, 83, 80, .15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ef5350;
+}
+
+.delete-modal-icon svg {
+    width: 22px;
+    height: 22px;
+}
+
+.delete-modal-title {
+    font-size: 1.05rem;
+    font-weight: 800;
+    letter-spacing: -.3px;
+    margin-bottom: .6rem;
+    color: #fff;
+    /* Truncate long names */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+}
+
+.delete-modal-desc {
+    font-size: .78rem;
+    line-height: 1.7;
+    color: rgba(255, 255, 255, .35);
+    margin-bottom: 1.8rem;
+}
+
+.delete-modal-actions {
+    display: flex;
+    gap: .75rem;
+}
+
+.delete-modal-btn {
+    flex: 1;
+    padding: .7rem 1rem;
+    border-radius: 10px;
+    border: none;
+    font-family: 'Figtree', sans-serif;
+    font-weight: 700;
+    font-size: .78rem;
+    letter-spacing: .2px;
+    cursor: pointer;
+    transition: background .2s, transform .15s, opacity .2s;
+}
+
+.delete-modal-btn:active {
+    transform: scale(.97);
+}
+
+.delete-modal-btn.cancel {
+    background: rgba(255, 255, 255, .06);
+    color: rgba(255, 255, 255, .5);
+    border: 1px solid rgba(255, 255, 255, .08);
+}
+
+.delete-modal-btn.cancel:hover {
+    background: rgba(255, 255, 255, .1);
+    color: rgba(255, 255, 255, .7);
+}
+
+.delete-modal-btn.confirm {
+    background: #ef5350;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+}
+
+.delete-modal-btn.confirm:hover {
+    background: #e53935;
+}
+
+.delete-modal-btn.confirm:disabled {
+    opacity: .6;
+    cursor: not-allowed;
+}
+
+.btn-spinner {
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255, 255, 255, .3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+}
+

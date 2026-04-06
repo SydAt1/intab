@@ -53,9 +53,7 @@ def build_library():
             is_beginner_key = (key in ["C", "D", "E", "G", "A"] and suffix == "major") or \
                               (key in ["E", "A"] and suffix == "minor")
                               
-            # The prompt literally said: key in ["C","D","E","G","A","Em","Am"]. It meant the actual chord name or root. I will just check if label is one of C major, D major, etc.
-            # but wait, it said `suffix in ["major", "minor"] AND key in ["C","D","E","G","A","Em","Am"]`
-            # This happens if the user meant "label" or something. I'll translate string:
+                              
             if suffix in ["major", "minor"] and (
                 (suffix == "major" and key in ["C", "D", "E", "G", "A"]) or
                 (suffix == "minor" and key in ["E", "A"])

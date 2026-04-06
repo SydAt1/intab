@@ -309,6 +309,52 @@ async def rename_audio_file(
         "updated": True
     }
 
+@router.delete("/{audio_id}")
+async def delete_audio_file(
+    audio_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Permanently deletes an audio file, its MinIO object, and related records."""
+    audio_record = db.query(AudioFile).filter(
+        AudioFile.id == audio_id,
+        AudioFile.user_id == current_user.id
+    ).first()
+
+    if not audio_record:
+        raise HTTPException(status_code=404, detail="Audio file not found")
+
+    # 1. Delete related tablature record (if any)
+    tab_record = db.query(Tablature).filter(Tablature.audio_file_id == audio_id).first()
+    if tab_record:
+        db.delete(tab_record)
+
+    # 2. Delete related chord record (if any)
+    from src.db.chord_model import Chord
+    chord_record = db.query(Chord).filter(Chord.audio_file_id == audio_id).first()
+    if chord_record:
+        db.delete(chord_record)
+
+    # 3. Delete file(s) from MinIO
+    try:
+        minio_client.delete_audio(audio_record.storage_key)
+    except Exception:
+        pass  # Storage key may already be gone
+
+    # Also try the original upload key if storage_key was updated to _processed
+    if "_processed" in audio_record.storage_key:
+        try:
+            original_key = audio_record.storage_key.replace("_processed", "")
+            minio_client.delete_audio(original_key)
+        except Exception:
+            pass
+
+    # 4. Delete the audio record itself
+    db.delete(audio_record)
+    db.commit()
+
+    return {"deleted": True, "id": audio_id}
+
 @router.get("/my-uploads")
 async def get_my_uploads(
     db: Session = Depends(get_db),

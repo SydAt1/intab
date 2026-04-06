@@ -1,6 +1,6 @@
 /**
  * history.js — Fetches chord visualizations & tablature history,
- *              renders them as clickable cards.
+ *              renders them as clickable cards with delete support.
  */
 
 (function () {
@@ -53,12 +53,193 @@
         if (overlay) overlay.classList.add('hidden');
     }
 
+    function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
+    // ── Delete Confirmation Modal ──
+
+    function createDeleteModal() {
+        const modal = document.createElement('div');
+        modal.id = 'delete-modal';
+        modal.className = 'delete-modal';
+        modal.innerHTML = `
+            <div class="delete-modal-backdrop"></div>
+            <div class="delete-modal-dialog">
+                <div class="delete-modal-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                        <line x1="10" y1="11" x2="10" y2="17"/>
+                        <line x1="14" y1="11" x2="14" y2="17"/>
+                    </svg>
+                </div>
+                <h3 class="delete-modal-title">Delete this item?</h3>
+                <p class="delete-modal-desc">
+                    This will permanently remove the audio file and all associated data.
+                    This action cannot be undone.
+                </p>
+                <div class="delete-modal-actions">
+                    <button class="delete-modal-btn cancel" id="delete-cancel">Cancel</button>
+                    <button class="delete-modal-btn confirm" id="delete-confirm">
+                        <span class="btn-text">Delete</span>
+                        <span class="btn-spinner" style="display:none;"></span>
+                    </button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        return modal;
+    }
+
+    let deleteModal = null;
+    let pendingDeleteResolve = null;
+
+    function showDeleteModal(itemName) {
+        if (!deleteModal) {
+            deleteModal = createDeleteModal();
+
+            deleteModal.querySelector('.delete-modal-backdrop').addEventListener('click', () => {
+                closeDeleteModal(false);
+            });
+            deleteModal.querySelector('#delete-cancel').addEventListener('click', () => {
+                closeDeleteModal(false);
+            });
+            deleteModal.querySelector('#delete-confirm').addEventListener('click', () => {
+                closeDeleteModal(true);
+            });
+        }
+
+        // Update title with item name
+        const title = deleteModal.querySelector('.delete-modal-title');
+        title.textContent = `Delete "${itemName}"?`;
+
+        // Reset confirm button state
+        const confirmBtn = deleteModal.querySelector('#delete-confirm');
+        confirmBtn.querySelector('.btn-text').textContent = 'Delete';
+        confirmBtn.querySelector('.btn-spinner').style.display = 'none';
+        confirmBtn.disabled = false;
+
+        deleteModal.classList.add('open');
+        document.body.style.overflow = 'hidden';
+
+        return new Promise(resolve => {
+            pendingDeleteResolve = resolve;
+        });
+    }
+
+    function closeDeleteModal(confirmed) {
+        if (deleteModal) {
+            deleteModal.classList.remove('open');
+            document.body.style.overflow = '';
+        }
+        if (pendingDeleteResolve) {
+            pendingDeleteResolve(confirmed);
+            pendingDeleteResolve = null;
+        }
+    }
+
+    // ── Delete Handler ──
+
+    async function handleDelete(audioId, cardEl, type) {
+        const nameEl = cardEl.querySelector('.card-name');
+        const itemName = nameEl ? nameEl.textContent : 'this item';
+
+        const confirmed = await showDeleteModal(itemName);
+        if (!confirmed) return;
+
+        // Determine API path based on type
+        const endpoint = type === 'chord'
+            ? `/api/chords/${audioId}`
+            : `/api/audio/${audioId}`;
+
+        try {
+            const res = await fetch(endpoint, {
+                method: 'DELETE',
+                headers: authHeaders()
+            });
+
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                throw new Error(err.detail || res.statusText);
+            }
+
+            // Animate card out
+            cardEl.style.transition = 'opacity .35s, transform .35s';
+            cardEl.style.opacity = '0';
+            cardEl.style.transform = 'scale(0.92) translateY(8px)';
+
+            setTimeout(() => {
+                cardEl.remove();
+                updateSectionCounts();
+            }, 380);
+
+        } catch (e) {
+            console.error('Delete failed:', e);
+            alert('Failed to delete: ' + e.message);
+        }
+    }
+
+    function updateSectionCounts() {
+        // Update chord count
+        const chordsGrid = document.getElementById('chords-grid');
+        const chordsCount = document.getElementById('chords-count');
+        if (chordsGrid && chordsCount) {
+            const cards = chordsGrid.querySelectorAll('.history-card');
+            const n = cards.length;
+            chordsCount.textContent = n > 0 ? `${n} item${n !== 1 ? 's' : ''}` : '';
+            if (n === 0 && !chordsGrid.querySelector('.empty-state')) {
+                chordsGrid.innerHTML = '';
+                chordsGrid.appendChild(buildEmptyState(
+                    'No chord visualizations yet.',
+                    'Visualize your first chords',
+                    '/chords'
+                ));
+            }
+        }
+
+        // Update tablature count
+        const tabsGrid = document.getElementById('tabs-grid');
+        const tabsCount = document.getElementById('tabs-count');
+        if (tabsGrid && tabsCount) {
+            const cards = tabsGrid.querySelectorAll('.history-card');
+            const n = cards.length;
+            tabsCount.textContent = n > 0 ? `${n} item${n !== 1 ? 's' : ''}` : '';
+            if (n === 0 && !tabsGrid.querySelector('.empty-state')) {
+                tabsGrid.innerHTML = '';
+                tabsGrid.appendChild(buildEmptyState(
+                    'No tablature transcriptions yet.',
+                    'Transcribe your first audio',
+                    '/tablature'
+                ));
+            }
+        }
+    }
+
     // ── Card Builders ──
 
+    function buildDeleteButton() {
+        const btn = document.createElement('button');
+        btn.className = 'card-delete-btn';
+        btn.setAttribute('aria-label', 'Delete');
+        btn.setAttribute('title', 'Delete');
+        btn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+            </svg>
+        `;
+        return btn;
+    }
+
     function buildChordCard(item) {
-        const card = document.createElement('a');
+        const card = document.createElement('div');
         card.className = 'history-card';
-        card.href = `/chords?id=${encodeURIComponent(item.id)}`;
+        card.dataset.audioId = item.id;
 
         // Extract unique chord names for preview chips
         const chordNames = [];
@@ -87,7 +268,9 @@
         card.innerHTML = `
             <div class="card-top">
                 <span class="card-name">${escapeHtml(item.tab_name || item.original_filename || 'Untitled')}</span>
-                <span class="card-status status-done">Done</span>
+                <div class="card-top-actions">
+                    <span class="card-status status-done">Done</span>
+                </div>
             </div>
             ${chipsHTML}
             <div class="card-footer">
@@ -95,24 +278,64 @@
                 <span class="card-arrow">→</span>
             </div>
         `;
+
+        // Add delete button to actions area
+        const actionsDiv = card.querySelector('.card-top-actions');
+        const deleteBtn = buildDeleteButton();
+        actionsDiv.appendChild(deleteBtn);
+
+        // Navigate on card click, but not on delete button
+        card.addEventListener('click', (e) => {
+            if (e.target.closest('.card-delete-btn')) return;
+            window.location.href = `/chords?id=${encodeURIComponent(item.id)}`;
+        });
+
+        // Delete handler
+        deleteBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleDelete(item.id, card, 'chord');
+        });
+
         return card;
     }
 
     function buildTabCard(item) {
-        const card = document.createElement('a');
+        const card = document.createElement('div');
         card.className = 'history-card';
-        card.href = `/tablature?id=${encodeURIComponent(item.id)}`;
+        card.dataset.audioId = item.id;
 
         card.innerHTML = `
             <div class="card-top">
                 <span class="card-name">${escapeHtml(item.tab_name || item.original_filename || 'Untitled')}</span>
-                <span class="card-status ${statusClass(item.status)}">${statusLabel(item.status)}</span>
+                <div class="card-top-actions">
+                    <span class="card-status ${statusClass(item.status)}">${statusLabel(item.status)}</span>
+                </div>
             </div>
             <div class="card-footer">
                 <span class="card-date">${formatDate(item.uploaded_at)}</span>
                 <span class="card-arrow">→</span>
             </div>
         `;
+
+        // Add delete button to actions area
+        const actionsDiv = card.querySelector('.card-top-actions');
+        const deleteBtn = buildDeleteButton();
+        actionsDiv.appendChild(deleteBtn);
+
+        // Navigate on card click, but not on delete button
+        card.addEventListener('click', (e) => {
+            if (e.target.closest('.card-delete-btn')) return;
+            window.location.href = `/tablature?id=${encodeURIComponent(item.id)}`;
+        });
+
+        // Delete handler
+        deleteBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleDelete(item.id, card, 'tab');
+        });
+
         return card;
     }
 
@@ -125,12 +348,6 @@
             <a href="${ctaHref}" class="empty-cta">${ctaText} →</a>
         `;
         return div;
-    }
-
-    function escapeHtml(str) {
-        const div = document.createElement('div');
-        div.textContent = str;
-        return div.innerHTML;
     }
 
     // ── Data Fetching ──

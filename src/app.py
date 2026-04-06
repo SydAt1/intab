@@ -5,7 +5,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import os
 
-app = FastAPI(title="Int6 API")
+app = FastAPI(title="InTab API")
 
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -35,16 +35,16 @@ async def startup_event():
 def read_root():
     return {"message": "API is running"}
 
-# ---------------------------------------------------------------------------
+
 # Jinja2 Templates
-# ---------------------------------------------------------------------------
+
 _base_dir = os.path.dirname(os.path.dirname(__file__))
 _templates_dir = os.path.join(_base_dir, "frontend", "web", "templates")
 templates = Jinja2Templates(directory=_templates_dir)
 
-# ---------------------------------------------------------------------------
+
 # Clean-URL page routes (no .html extension)
-# ---------------------------------------------------------------------------
+
 
 @app.get("/")
 async def page_index(request: Request):
@@ -82,9 +82,9 @@ async def page_sidenav(request: Request):
 async def page_tablature(request: Request):
     return templates.TemplateResponse(request, "tablature.html")
 
-# ---------------------------------------------------------------------------
+
 # Static file mounts (CSS, JS, assets) — must come AFTER page routes
-# ---------------------------------------------------------------------------
+
 _web_dir = os.path.join(_base_dir, "frontend", "web")
 
 _css_dir = os.path.join(_web_dir, "css")
