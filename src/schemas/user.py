@@ -25,3 +25,10 @@ class TokenResponse(BaseModel):
     token_type: str
     session_id: str
     user: UserResponse
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str

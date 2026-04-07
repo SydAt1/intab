@@ -6,7 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Audio to Tablature | Tablature Intelligence</title>
     <link rel="icon" type="image/png" href="/static/favicon.png">
-    <link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300;0,400;0,600;0,700;0,800;0,900;1,300;1,800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300;0,400;0,600;0,700;0,800;0,900;1,300;1,800&family=Space+Mono:wght@400;700&display=swap"
+        rel="stylesheet" />
     <link rel="stylesheet" href="/css/tablature.css">
     <link rel="stylesheet" href="/css/app-header.css">
 </head>
@@ -45,7 +47,8 @@
 
                         <!-- Tab Toggle -->
                         <div class="upload-tab-toggle">
-                            <button class="upload-tab active" id="tabFile" onclick="switchUploadTab('file')">Upload File</button>
+                            <button class="upload-tab active" id="tabFile" onclick="switchUploadTab('file')">Upload
+                                File</button>
                             <button class="upload-tab" id="tabUrl" onclick="switchUploadTab('url')">Paste URL</button>
                         </div>
 
@@ -54,7 +57,8 @@
                             <div class="drop-zone" id="dropZone">
                                 <div class="drop-zone-icon">
                                     <svg width="52" height="52" viewBox="0 0 52 52" fill="none">
-                                        <rect x="8" y="6" width="28" height="36" rx="4" stroke="#535353" stroke-width="2" />
+                                        <rect x="8" y="6" width="28" height="36" rx="4" stroke="#535353"
+                                            stroke-width="2" />
                                         <path d="M28 6v10h10" stroke="#535353" stroke-width="2" />
                                         <circle cx="38" cy="38" r="10" fill="#1DB954" />
                                         <path d="M34 38h8M38 34v8" stroke="#000" stroke-width="2.5"
@@ -74,7 +78,8 @@
                         <!-- URL Upload Panel (new) -->
                         <div id="urlPanel" style="display:none">
                             <div class="url-input-group">
-                                <input type="text" id="urlInput" class="text-input" placeholder="Paste a YouTube or TikTok URL" />
+                                <input type="text" id="urlInput" class="text-input"
+                                    placeholder="Paste a YouTube or TikTok URL" />
                                 <p class="url-error" id="urlError" style="display:none"></p>
                                 <button class="btn-primary url-fetch-btn" id="urlFetchBtn" onclick="handleUrlUpload()">
                                     <span id="urlFetchBtnText">🔗 Fetch & Transcribe</span>
@@ -672,7 +677,7 @@
                 // Convert file_path into a valid AudioFile record via our new endpoint
                 const token = (typeof Auth !== 'undefined' && Auth.getToken?.()) || localStorage.getItem('access_token') || '';
                 const tabName = document.getElementById('tabNameInput').value.trim();
-                
+
                 const uploadRes = await fetch('/api/audio/upload-from-path', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
@@ -684,7 +689,7 @@
 
                 btnText.textContent = '✓ Ready';
                 showStatus('Automatically starting transcription...', 'loading');
-                
+
                 currentAudioId = uploadData.id;
                 document.getElementById('transcribeBtn').disabled = false;
                 loadHistory();

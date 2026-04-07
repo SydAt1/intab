@@ -82,6 +82,14 @@ async def page_sidenav(request: Request):
 async def page_tablature(request: Request):
     return templates.TemplateResponse(request, "tablature.html")
 
+@app.get("/forgot-password")
+async def page_forgot_password(request: Request):
+    return templates.TemplateResponse(request, "forgot_password.html")
+
+@app.get("/reset-password")
+async def page_reset_password(request: Request, token: str = None):
+    return templates.TemplateResponse(request, "reset_password.html", {"token": token})
+
 
 # Static file mounts (CSS, JS, assets) — must come AFTER page routes
 

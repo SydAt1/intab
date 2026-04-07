@@ -8,10 +8,54 @@ from src.auth.password_utils import hash_password, verify_password
 from src.auth.jwt_utils import create_access_token
 from src.api.dependencies import get_current_user
 from src.util.sessionHandler import session_manager
+from src.schemas.user import UserCreate, UserLogin, UserResponse, TokenResponse, ForgotPasswordRequest, ResetPasswordRequest
+from src.util.email import send_reset_email
 
 import uuid
+import secrets
+from datetime import datetime, timedelta
 
 router = APIRouter(prefix="", tags=["auth"])
+
+@router.post("/forgot-password")
+async def forgot_password(request: ForgotPasswordRequest, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == request.email).first()
+    if not user:
+        # We don't want to reveal if an email is registered or not for security
+        return {"message": "If an account with this email exists, a reset link has been sent."}
+    
+    # Generate random token
+    token = secrets.token_urlsafe(32)
+    user.reset_token = token
+    user.reset_token_expiry = datetime.utcnow() + timedelta(hours=1)
+    
+    db.commit()
+    
+    # Send email
+    sent = send_reset_email(user.email, token)
+    if not sent:
+        raise HTTPException(status_code=500, detail="Failed to send reset email")
+        
+    return {"message": "If an account with this email exists, a reset link has been sent."}
+
+@router.post("/reset-password")
+async def reset_password(request: ResetPasswordRequest, db: Session = Depends(get_db)):
+    user = db.query(User).filter(
+        User.reset_token == request.token,
+        User.reset_token_expiry > datetime.utcnow()
+    ).first()
+    
+    if not user:
+        raise HTTPException(status_code=400, detail="Invalid or expired reset token")
+    
+    # Update password
+    user.password_hash = hash_password(request.new_password)
+    user.reset_token = None
+    user.reset_token_expiry = None
+    
+    db.commit()
+    
+    return {"message": "Password reset successfully"}
 
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 def register(user: UserCreate, db: Session = Depends(get_db)):
