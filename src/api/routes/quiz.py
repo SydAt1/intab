@@ -59,7 +59,7 @@ class QuizHistoryResponse(BaseModel):
 # Quiz Router
 # ========================
 
-router = APIRouter()
+router = APIRouter(tags=["quiz"])
 
 # Imports needed inside router
 from src.db.models import QuizSession, QuizAttempt
