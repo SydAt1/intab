@@ -38,7 +38,9 @@
             <a href="/tablature">Upload</a>
             <a href="/fretboard">Fretboard</a>
             <a href="/chords">Chords</a>
-            <a href="/output-editing">Export</a>
+            <a href="/login" id="headerAuthLink" style="border: 2px solid rgba(0,0,0,0.8); padding: 0.3rem 1rem; border-radius: 6px; font-weight: 600; text-decoration: none;">
+                <span id="headerAuthText">Log In</span>
+            </a>
         </nav>
     </header>
 
@@ -306,6 +308,20 @@
 
         // QUIZ interactions
         (function () {
+            Auth.checkLogin(false).then(user => {
+                const btn = document.getElementById('headerAuthLink');
+                const txt = document.getElementById('headerAuthText');
+                if (user && btn && txt) {
+                    txt.textContent = 'Log Out';
+                    btn.removeAttribute('href');
+                    btn.style.cursor = 'pointer';
+                    btn.onclick = (e) => {
+                        e.preventDefault();
+                        Auth.logout();
+                    };
+                }
+            });
+
             const opts = document.querySelectorAll('.qopt');
             const scoreEl = document.getElementById('quiz-score');
             let score = 7;

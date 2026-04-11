@@ -838,15 +838,18 @@ body {
 }
 
 .opt.wrong {
-  background: rgba(255, 255, 255, .04);
-  border-color: rgba(255, 255, 255, .15);
-  color: rgba(255, 255, 255, .35);
+  background: rgba(231, 76, 60, .12);
+  border-color: #e74c3c;
+  color: #e74c3c;
+  box-shadow: 0 0 22px rgba(231, 76, 60, .25);
   animation: popIn .22s var(--ease) both;
 }
 
 .opt.reveal-correct {
-  border-color: rgba(29, 185, 84, .4);
-  color: rgba(29, 185, 84, .7);
+  background: rgba(29, 185, 84, .12);
+  border-color: var(--green);
+  color: var(--green);
+  box-shadow: 0 0 22px rgba(29, 185, 84, .25);
 }
 
 @keyframes popIn {

@@ -85,7 +85,9 @@ body {
 
 .header-nav {
     display: flex;
+    align-items: center;
     gap: 2rem;
+    white-space: nowrap;
 }
 
 .header-nav a {
