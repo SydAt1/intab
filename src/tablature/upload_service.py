@@ -156,7 +156,7 @@ def process_url_upload(url: str, temp_dir: str = None) -> str:
             "--audio-format", "wav",
             "--audio-quality", "0",
             "--no-playlist",
-            "--max-filesize", "50m",
+            "--max-filesize", "100m",
             "-o", output_template,
             url,
         ],
