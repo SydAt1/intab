@@ -13,6 +13,8 @@ ALLOWED_HOSTS = {
     "tiktok.com", "www.tiktok.com", "vm.tiktok.com",
 }
 
+MAX_FILE_SIZE = 100 * 1024 * 1024  # 100 MB
+
 
 class URLUploadRequest(BaseModel):
     url: str
@@ -26,6 +28,11 @@ async def upload_audio(file: UploadFile = File(...)):
     """
     if not file.filename.endswith(('.mp3', '.wav', '.ogg', '.flac', '.m4a')):
         raise HTTPException(status_code=400, detail="Invalid file type. Only audio files are supported.")
+        
+    file_bytes = await file.read()
+    if len(file_bytes) > MAX_FILE_SIZE:
+        raise HTTPException(status_code=400, detail="file too large")
+    await file.seek(0)
         
     try:
         processed_path = process_upload(file)

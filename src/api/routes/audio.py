@@ -28,7 +28,7 @@ from src.tablature.visualization import generate_ascii_tab
 router = APIRouter(prefix="/audio", tags=["audio"])
 
 ALLOWED_CONTENT_TYPES = ["audio/mpeg", "audio/wav", "audio/flac", "audio/ogg", "audio/mp4"]
-MAX_FILE_SIZE = 50 * 1024 * 1024  # 50 MB
+MAX_FILE_SIZE = 100 * 1024 * 1024  # 100 MB
 
 @router.post("/upload")
 async def upload_audio_file(
@@ -51,7 +51,7 @@ async def upload_audio_file(
     file_size = len(file_bytes)
     
     if file_size > MAX_FILE_SIZE:
-        raise HTTPException(status_code=400, detail="File too large. Maximum size is 50MB.")
+        raise HTTPException(status_code=400, detail="file too large")
         
     # Trim audio if timestamps are provided
     if trim_start is not None and trim_end is not None:
@@ -133,7 +133,7 @@ async def upload_audio_from_path(
         
     file_size = len(file_bytes)
     if file_size > MAX_FILE_SIZE:
-        raise HTTPException(status_code=400, detail="File too large. Maximum size is 50MB.")
+        raise HTTPException(status_code=400, detail="file too large")
         
     file_id = str(uuid.uuid4())
     original_filename = os.path.basename(payload.file_path)

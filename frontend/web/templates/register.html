@@ -49,9 +49,9 @@
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="fullName" class="form-label">Full Name</label>
-                            <input type="text" id="fullName" class="form-input" placeholder="Jamie Lee" autocomplete="name" required>
-                            <div class="error-message" id="fullNameError">Please enter your full name</div>
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" id="username" class="form-input" placeholder="guitar_hero" autocomplete="username" required>
+                            <div class="error-message" id="usernameError">Please enter a username</div>
                         </div>
                     </div>
 
@@ -285,8 +285,8 @@
         function validateForm() {
             let valid = true;
 
-            const name = document.getElementById('fullName');
-            const nameErr = document.getElementById('fullNameError');
+            const name = document.getElementById('username');
+            const nameErr = document.getElementById('usernameError');
             if (name.value.trim().length < 2) {
                 name.classList.add('error'); nameErr.classList.add('show'); valid = false;
             } else {
@@ -340,10 +340,9 @@
             submitBtn.querySelector('.btn-text').textContent = 'Creating…';
 
             const data = {
-                username: document.getElementById('email').value.split('@')[0],
+                username: document.getElementById('username').value,
                 email: document.getElementById('email').value,
-                password: document.getElementById('password').value,
-                full_name: document.getElementById('fullName').value
+                password: document.getElementById('password').value
             };
 
             try {

@@ -18,7 +18,7 @@ from src.api.dependencies import get_current_user
 router = APIRouter(prefix="/chords", tags=["chords"])
 
 ALLOWED_CONTENT_TYPES = ["audio/mpeg", "audio/wav", "audio/flac", "audio/ogg", "audio/mp4"]
-MAX_FILE_SIZE = 50 * 1024 * 1024  # 50 MB
+MAX_FILE_SIZE = 100 * 1024 * 1024  # 100 MB
 
 @router.post("/recognize")
 async def recognize_chords_api(
@@ -42,7 +42,7 @@ async def recognize_chords_api(
     file_size = len(file_bytes)
     
     if file_size > MAX_FILE_SIZE:
-        raise HTTPException(status_code=400, detail="File too large. Maximum size is 50MB.")
+        raise HTTPException(status_code=400, detail="file too large")
         
     temp_dir = tempfile.mkdtemp()
     temp_file_path = None
@@ -207,7 +207,7 @@ async def recognize_chords_from_path(
 
         file_size = len(file_bytes)
         if file_size > MAX_FILE_SIZE:
-            raise HTTPException(status_code=400, detail="File too large. Maximum size is 50MB.")
+            raise HTTPException(status_code=400, detail="file too large")
 
         original_filename = os.path.basename(payload.file_path)
         _, ext = os.path.splitext(original_filename)
