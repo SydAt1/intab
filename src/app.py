@@ -62,6 +62,10 @@ async def page_fretboard(request: Request):
 async def page_history(request: Request):
     return templates.TemplateResponse(request, "history.html")
 
+@app.get("/search")
+async def page_search(request: Request):
+    return templates.TemplateResponse(request, "search.html")
+
 @app.get("/login")
 async def page_login(request: Request):
     return templates.TemplateResponse(request, "login.html")

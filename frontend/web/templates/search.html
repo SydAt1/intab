@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Search | InTab</title>
+    <link rel="icon" type="image/png" href="/static/favicon.png">
+    <meta name="description" content="Search your chord visualization and tablature history on InTab." />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300;0,400;0,600;0,700;0,800;0,900;1,300;1,800&family=Space+Mono:wght@400;700&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="/css/history.css" />
+    <link rel="stylesheet" href="/css/app-header.css" />
+    <style>
+        .search-container {
+            display: flex;
+            margin-top: 1.5rem;
+            max-width: 600px;
+            gap: 0.5rem;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            background: #fdfdfd;
+            font-family: inherit;
+            font-size: 1rem;
+            color: #111;
+            transition: all 0.2s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #111;
+            background: #fff;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .search-btn {
+            padding: 0.75rem 1.25rem;
+            border-radius: 8px;
+            background: #111;
+            color: #fff;
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .search-btn:hover {
+            background: #333;
+        }
+    </style>
+</head>
+
+<body data-page="search">
+
+    <!-- Loading overlay -->
+    <div id="loading-overlay" class="hidden">
+        <div class="lo-inner">
+            <div class="lo-ring"></div>
+            <span class="lo-text">Searching…</span>
+        </div>
+    </div>
+
+    <!-- Ghost watermark -->
+    <div class="ghost-label">SEARCH</div>
+
+    <!-- Sidenav -->
+    <div id="nav-wrap" style="position:fixed;top:0;left:0;bottom:0;z-index:999;height:100vh;">
+        <aside id="sidebar-container"></aside>
+    </div>
+
+    <!-- Main content -->
+    <header class="app-header">
+        <div class="header-logo">
+            <div class="header-logo-mark">
+                <svg viewBox="0 0 16 16" fill="none">
+                    <rect x="7" y="1" width="2" height="14" fill="#000" />
+                    <circle cx="8" cy="4" r="2.5" fill="#000" />
+                </svg>
+            </div>
+            <span class="header-wordmark">intab</span>
+        </div>
+    </header>
+    <div class="history-page">
+
+        <!-- Hero Header -->
+        <header class="history-hero">
+            <p class="hero-eyebrow">Find your music</p>
+            <h1 class="history-h1">
+                <span class="thin">Search your</span>
+                <span class="accent">library</span>.
+            </h1>
+            <p class="history-desc">
+                Search through your uploaded audio files and generated tablatures.
+            </p>
+            
+            <form class="search-container" id="search-form" onsubmit="event.preventDefault();">
+                <input type="text" id="search-field" class="search-input" placeholder="Search by name... e.g., 'solo'" autocomplete="off" />
+                <button type="submit" id="search-submit" class="search-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8" />
+                        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                    </svg>
+                    Search
+                </button>
+            </form>
+        </header>
+
+        <!-- Sections container -->
+        <div id="sections-container">
+
+            <!-- ══ Tablature Section ══ -->
+            <section class="history-section" id="tabs-section">
+                <div class="section-header">
+                    <div class="section-icon tabs-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                            <polyline points="17 8 12 3 7 8" />
+                            <line x1="12" y1="3" x2="12" y2="15" />
+                        </svg>
+                    </div>
+                    <span class="section-title">Search Results</span>
+                    <span class="section-count" id="tabs-count"></span>
+                    <div class="section-line"></div>
+                </div>
+                <!-- Initial info text -->
+                <p id="search-info" style="color: #666; font-size: 0.95rem; margin-top: 1rem;">Enter a term above to search your uploads.</p>
+                
+                <div class="card-grid" id="tabs-grid">
+                    <!-- Cards injected by JS -->
+                </div>
+            </section>
+
+        </div>
+    </div>
+
+    <script src="/static/js/auth.js"></script>
+    <script src="/static/js/sidenav.js"></script>
+    <script src="/js/search.js"></script>
+</body>
+
+</html>
