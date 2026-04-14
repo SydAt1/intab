@@ -38,7 +38,7 @@ body {
 }
 
 /* HEADER */
-.header {
+.header_disabled {
     position: fixed;
     top: 0;
     left: 0;

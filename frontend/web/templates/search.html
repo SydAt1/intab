@@ -75,30 +75,20 @@
     <div class="ghost-label">SEARCH</div>
 
     <!-- Sidenav -->
-    <div id="nav-wrap" style="position:fixed;top:0;left:0;bottom:0;z-index:999;height:100vh;">
+    <div id="nav-wrap" style="position:fixed;top:70px;left:0;bottom:0;z-index:999;height:calc(100vh - 70px);">
         <aside id="sidebar-container"></aside>
     </div>
 
     <!-- Main content -->
-    <header class="app-header">
-        <div class="header-logo">
-            <div class="header-logo-mark">
-                <svg viewBox="0 0 16 16" fill="none">
-                    <rect x="7" y="1" width="2" height="14" fill="#000" />
-                    <circle cx="8" cy="4" r="2.5" fill="#000" />
-                </svg>
-            </div>
-            <span class="header-wordmark">intab</span>
-        </div>
-    </header>
+    {% include 'components/app_header.html' %}
     <div class="history-page">
 
         <!-- Hero Header -->
         <header class="history-hero">
             <p class="hero-eyebrow">Find your music</p>
             <h1 class="history-h1">
-                <span class="thin">Search your</span>
-                <span class="accent">library</span>.
+                <span class="thin">Search your</span><br/>
+                <span class="accent" style="color: #10b981;">library.</span>
             </h1>
             <p class="history-desc">
                 Search through your uploaded audio files and generated tablatures.

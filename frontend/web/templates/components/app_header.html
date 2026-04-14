@@ -1,0 +1,25 @@
+{% if is_auth is not defined %}{% set is_auth = false %}{% endif %}
+{% if show_nav is not defined %}{% set show_nav = false %}{% endif %}
+<header class="app-header {% if is_auth %}auth-header{% endif %}">
+    <div class="header-logo">
+        <a href="/" style="display:flex; align-items:center; gap:0.7rem; text-decoration:none;">
+            <div class="header-logo-mark">
+                <svg viewBox="0 0 16 16" fill="none">
+                    <rect x="7" y="1" width="2" height="14" fill="#000" />
+                    <circle cx="8" cy="4" r="2.5" fill="#000" />
+                </svg>
+            </div>
+            <span class="header-wordmark">intab</span>
+        </a>
+    </div>
+    {% if show_nav %}
+    <nav class="header-nav">
+        <a href="/tablature">Upload</a>
+        <a href="/fretboard">Fretboard</a>
+        <a href="/chords">Chords</a>
+        <a href="/login" id="headerAuthLink" style="border: 2px solid rgba(255, 255, 255, 0.8); padding: 0.3rem 1rem; border-radius: 6px; font-weight: 600; text-decoration: none; color: #fff;">
+            <span id="headerAuthText">Log In</span>
+        </a>
+    </nav>
+    {% endif %}
+</header>

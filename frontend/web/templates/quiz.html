@@ -25,22 +25,13 @@
     </div>
   </div>
 
-  <div id="nav-wrap" style="position:fixed;top:0;left:0;bottom:0;z-index:999;height:100vh;">
+  <div id="nav-wrap" style="position:fixed;top:70px;left:0;bottom:0;z-index:999;height:calc(100vh - 70px);">
     <aside id="sidebar-container"></aside>
   </div>
 
+  {% include 'components/app_header.html' %}
+
   <div id="app">
-    <header class="app-header">
-      <div class="header-logo">
-        <div class="header-logo-mark">
-          <svg viewBox="0 0 16 16" fill="none">
-            <rect x="7" y="1" width="2" height="14" fill="#000" />
-            <circle cx="8" cy="4" r="2.5" fill="#000" />
-          </svg>
-        </div>
-        <span class="header-wordmark">intab</span>
-      </div>
-    </header>
 
     <!-- ══════════════════════════════
        LOBBY / DASHBOARD

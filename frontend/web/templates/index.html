@@ -5,6 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Audio to Tablature | Premium</title>
+    <link rel="stylesheet" href="/css/app-header.css">
     <link rel="icon" type="image/png" href="/static/favicon.png">
     <link
         href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300;0,400;0,600;0,700;0,800;0,900;1,300;1,800&family=Space+Mono:wght@400;700&display=swap"
@@ -24,25 +25,8 @@
         <div class="dot" data-i="5"></div>
     </nav>
 
-    <header class="header">
-        <div class="header-logo">
-            <div class="header-logo-mark">
-                <svg viewBox="0 0 16 16" fill="none">
-                    <rect x="7" y="1" width="2" height="14" fill="#000" />
-                    <circle cx="8" cy="4" r="2.5" fill="#000" />
-                </svg>
-            </div>
-            <span class="header-wordmark">intab</span>
-        </div>
-        <nav class="header-nav">
-            <a href="/tablature">Upload</a>
-            <a href="/fretboard">Fretboard</a>
-            <a href="/chords">Chords</a>
-            <a href="/login" id="headerAuthLink" style="border: 2px solid rgba(0,0,0,0.8); padding: 0.3rem 1rem; border-radius: 6px; font-weight: 600; text-decoration: none;">
-                <span id="headerAuthText">Log In</span>
-            </a>
-        </nav>
-    </header>
+    {% set show_nav = true %}
+{% include 'components/app_header.html' %}
 
     <div id="sc">
 
@@ -291,7 +275,7 @@
 
     </div><!-- end #sc -->
 
-    <div id="nav-wrap" style="position: fixed; top: 0; left: 0; bottom: 0; z-index: 999; height: 100vh;">
+    <div id="nav-wrap" style="position: fixed; top: 70px; left: 0; bottom: 0; z-index: 999; height: calc(100vh - 70px);">
         <aside id="sidebar-container"></aside>
     </div>
 

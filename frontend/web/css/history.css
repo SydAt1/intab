@@ -23,6 +23,14 @@
     box-sizing: border-box;
 }
 
+html {
+    min-height: 100%;
+}
+
+#sidebar-container {
+    height: 100%;
+}
+
 body {
     font-family: 'Figtree', sans-serif;
     background: #08101a;

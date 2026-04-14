@@ -15,17 +15,7 @@
 
 <body>
 
-    <header class="app-header">
-        <div class="header-logo">
-            <div class="header-logo-mark">
-                <svg viewBox="0 0 16 16" fill="none">
-                    <rect x="7" y="1" width="2" height="14" fill="#000" />
-                    <circle cx="8" cy="4" r="2.5" fill="#000" />
-                </svg>
-            </div>
-            <span class="header-wordmark">intab</span>
-        </div>
-    </header>
+    {% include 'components/app_header.html' %}
 
     <div class="app-container">
         <aside id="sidebar-container"></aside>
@@ -614,7 +604,14 @@
                     headers: { 'Authorization': 'Bearer ' + token },
                     body: formData
                 });
-                if (!res.ok) throw new Error(await res.text());
+                if (!res.ok) {
+                    const raw = await res.text();
+                    let msg = raw;
+                    try { const j = JSON.parse(raw); msg = j.detail || j.message || raw; } catch {}
+                    // Capitalise first letter, strip trailing punctuation artifacts
+                    msg = msg.charAt(0).toUpperCase() + msg.slice(1);
+                    throw new Error(msg);
+                }
                 const data = await res.json();
                 currentAudioId = data.id;
 
@@ -731,7 +728,13 @@
                     method: 'POST',
                     headers: { 'Authorization': 'Bearer ' + token }
                 });
-                if (!res.ok) throw new Error(await res.text());
+                if (!res.ok) {
+                    const raw = await res.text();
+                    let msg = raw;
+                    try { const j = JSON.parse(raw); msg = j.detail || j.message || raw; } catch {}
+                    msg = msg.charAt(0).toUpperCase() + msg.slice(1);
+                    throw new Error(msg);
+                }
                 await pollResult(currentAudioId);
             } catch (err) {
                 showStatus('Transcription failed: ' + err.message, 'error');
