@@ -1,7 +1,12 @@
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+# Load from Render's Secret Files path if it exists, otherwise default (local path)
+render_env_path = "/etc/secrets/.env"
+if os.path.exists(render_env_path):
+    load_dotenv(render_env_path)
+else:
+    load_dotenv()
 
 DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
