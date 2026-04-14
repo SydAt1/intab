@@ -11,7 +11,15 @@ services:
       # Persist the demucs model cache (~900 MB) so htdemucs_6s isn't
       # re-downloaded every time the container restarts.
       - demucs_model_cache:/root/.cache
+    networks:
+      - intab-net
     restart: unless-stopped
 
 volumes:
   demucs_model_cache:
+
+networks:
+  intab-net:
+    driver: bridge
+    driver_opts:
+      com.docker.network.enable_ipv6: "false"
