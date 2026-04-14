@@ -28,8 +28,8 @@ app.include_router(quiz.router, prefix="/api/quiz")
 
 @app.on_event("startup")
 async def startup_event():
-    from src.core import minio_client
-    # minio_client.ensure_bucket_exists()
+    from src.core import s3_client
+    # s3_client.ensure_bucket_exists()
 
 @app.get("/api/health")
 def read_root():

@@ -8,7 +8,7 @@ import json
 
 from src.chords.chords import recognize_chords
 from src.tablature.upload_service import separate_guitar, preprocess_audio
-from src.core import minio_client
+from src.core import s3_client
 from src.db.connection import get_db
 from src.db.models import User
 from src.db.audio_model import AudioFile
@@ -48,7 +48,7 @@ async def recognize_chords_api(
     temp_file_path = None
     
     try:
-        # Generate storage key and upload to MinIO
+        # Generate storage key and upload to S3
         _, ext = os.path.splitext(file.filename)
         if not ext:
             ext = ".wav" # Default
@@ -56,8 +56,8 @@ async def recognize_chords_api(
         file_id = str(uuid.uuid4())
         storage_key = f"chords/{current_user.id}/{file_id}{ext}"
         
-        minio_client.upload_audio(file_bytes, storage_key, file.content_type)
-        audio_url = minio_client.get_presigned_url(storage_key)
+        s3_client.upload_audio(file_bytes, storage_key, file.content_type)
+        audio_url = s3_client.get_presigned_url(storage_key)
         
         # Write bytes to temporary file for librosa to process
         temp_file_path = os.path.join(temp_dir, f"temp_upload_{file.filename}")
@@ -140,7 +140,7 @@ async def get_my_chords(
             "tab_name": r.tab_name,
             "status": r.status,
             "uploaded_at": r.uploaded_at,
-            "audio_url": minio_client.get_presigned_url(r.storage_key),
+            "audio_url": s3_client.get_presigned_url(r.storage_key),
             "chords": chords_data
         })
     return results
@@ -151,7 +151,7 @@ async def delete_chord_record(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Permanently deletes a chord recognition, its audio from MinIO, and DB records."""
+    """Permanently deletes a chord recognition, its audio from S3, and DB records."""
     audio_record = db.query(AudioFile).filter(
         AudioFile.id == chord_audio_id,
         AudioFile.user_id == current_user.id
@@ -165,9 +165,9 @@ async def delete_chord_record(
     if chord_record:
         db.delete(chord_record)
 
-    # Delete file from MinIO
+    # Delete file from S3
     try:
-        minio_client.delete_audio(audio_record.storage_key)
+        s3_client.delete_audio(audio_record.storage_key)
     except Exception:
         pass
 
@@ -201,7 +201,7 @@ async def recognize_chords_from_path(
 
     temp_dir = tempfile.mkdtemp()
     try:
-        # Read file for MinIO storage
+        # Read file for S3 storage
         with open(payload.file_path, "rb") as f:
             file_bytes = f.read()
 
@@ -218,8 +218,8 @@ async def recognize_chords_from_path(
         storage_key = f"chords/{current_user.id}/{file_id}{ext}"
 
         content_type = "audio/wav" if ext.lower() == ".wav" else "audio/mpeg"
-        minio_client.upload_audio(file_bytes, storage_key, content_type)
-        audio_url = minio_client.get_presigned_url(storage_key)
+        s3_client.upload_audio(file_bytes, storage_key, content_type)
+        audio_url = s3_client.get_presigned_url(storage_key)
 
         # Optionally isolate guitar stem
         audio_for_chords = payload.file_path

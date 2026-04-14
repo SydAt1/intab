@@ -12,7 +12,7 @@ from src.db.models import User
 from src.db.audio_model import AudioFile
 from src.db.tablature_model import Tablature
 from src.api.dependencies import get_current_user
-from src.core import minio_client
+from src.core import s3_client
 
 from pydantic import BaseModel
 
@@ -39,7 +39,7 @@ async def upload_audio_file(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Uploads an audio file and saves it to MinIO with a DB record."""
+    """Uploads an audio file and saves it to S3 with a DB record."""
     if file.content_type not in ALLOWED_CONTENT_TYPES:
         raise HTTPException(
             status_code=400,
@@ -89,8 +89,8 @@ async def upload_audio_file(
         
     storage_key = f"uploads/{current_user.id}/{file_id}{ext}"
     
-    # Upload to MinIO
-    minio_client.upload_audio(file_bytes, storage_key, file.content_type)
+    # Upload to S3
+    s3_client.upload_audio(file_bytes, storage_key, file.content_type)
     
     # Default tab name if none provided
     final_tab_name = tab_name if tab_name else os.path.splitext(file.filename)[0]
@@ -124,7 +124,7 @@ async def upload_audio_from_path(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Uploads a server-local file (e.g., from URL fetch) to MinIO and creates a DB record."""
+    """Uploads a server-local file (e.g., from URL fetch) to S3 and creates a DB record."""
     if not os.path.exists(payload.file_path):
         raise HTTPException(status_code=400, detail="File not found")
         
@@ -144,7 +144,7 @@ async def upload_audio_from_path(
     storage_key = f"uploads/{current_user.id}/{file_id}{ext}"
     content_type = "audio/wav" if ext.lower() == ".wav" else "audio/mpeg"
     
-    minio_client.upload_audio(file_bytes, storage_key, content_type)
+    s3_client.upload_audio(file_bytes, storage_key, content_type)
     
     final_tab_name = payload.tab_name if payload.tab_name else original_filename.rsplit(".", 1)[0]
     
@@ -204,8 +204,8 @@ async def transcribe_audio_file(
     processed_path = None
     
     try:
-        # Download raw audio from MinIO
-        file_bytes = minio_client.download_audio(audio_record.storage_key)
+        # Download raw audio from S3
+        file_bytes = s3_client.download_audio(audio_record.storage_key)
         
         # Write bytes to temporary file to simulate UploadFile flow behavior
         temp_file_path = os.path.join(temp_dir, f"raw_{audio_record.id}.wav")
@@ -226,7 +226,7 @@ async def transcribe_audio_file(
         # Do the actual transcription using CRNN model logic
         notes = transcribe_audio(processed_path)
         
-        # --- NEW CODE: Upload isolated guitar stem back to MinIO ---
+        # --- NEW CODE: Upload isolated guitar stem back to S3 ---
         base_key, ext = os.path.splitext(audio_record.storage_key)
         new_storage_key = f"{base_key}_processed{ext}"
         
@@ -236,7 +236,7 @@ async def transcribe_audio_file(
         # Determine content type (usually wav since process_upload forces it)
         content_type = "audio/wav" if processed_path.endswith(".wav") else "audio/mpeg"
         
-        minio_client.upload_audio(processed_bytes, new_storage_key, content_type)
+        s3_client.upload_audio(processed_bytes, new_storage_key, content_type)
         
         # Update audio_record to point to the processed audio
         audio_record.storage_key = new_storage_key
@@ -315,7 +315,7 @@ async def delete_audio_file(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Permanently deletes an audio file, its MinIO object, and related records."""
+    """Permanently deletes an audio file, its S3 object, and related records."""
     audio_record = db.query(AudioFile).filter(
         AudioFile.id == audio_id,
         AudioFile.user_id == current_user.id
@@ -335,9 +335,9 @@ async def delete_audio_file(
     if chord_record:
         db.delete(chord_record)
 
-    # 3. Delete file(s) from MinIO
+    # 3. Delete file(s) from S3
     try:
-        minio_client.delete_audio(audio_record.storage_key)
+        s3_client.delete_audio(audio_record.storage_key)
     except Exception:
         pass  # Storage key may already be gone
 
@@ -345,7 +345,7 @@ async def delete_audio_file(
     if "_processed" in audio_record.storage_key:
         try:
             original_key = audio_record.storage_key.replace("_processed", "")
-            minio_client.delete_audio(original_key)
+            s3_client.delete_audio(original_key)
         except Exception:
             pass
 
@@ -399,7 +399,7 @@ async def get_transcription_result(
         }
         
     tab_record = db.query(Tablature).filter(Tablature.audio_file_id == audio_id).first()
-    audio_url = minio_client.get_presigned_url(audio_record.storage_key)
+    audio_url = s3_client.get_presigned_url(audio_record.storage_key)
     
     return {
         "status": "done",
