@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      # Persist the demucs model cache (~900 MB) so htdemucs_6s isn't
+      # re-downloaded every time the container restarts.
+      - demucs_model_cache:/root/.cache
+    restart: unless-stopped
+
+volumes:
+  demucs_model_cache:

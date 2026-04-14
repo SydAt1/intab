@@ -1,0 +1,43 @@
+# Secrets
+.env
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Git
+.git/
+.gitignore
+
+# Docker metadata (no need to copy into image)
+.dockerignore
+Dockerfile
+docker-compose.yml
+
+# Node
+node_modules/
+frontend/web/node_modules/
+
+# Tests
+test/
+tests/
+test_*.py
+
+# Research / docs
+research_literature.md
+*.md
+
+# Misc dev files
+file.py
+*.DS_Store
+
+# Old model checkpoints (keep only best_crnn_fixed.pth)
+src/tablature/model/previous/
