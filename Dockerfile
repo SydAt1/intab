@@ -22,6 +22,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Pre-download the htdemucs_6s model weights so they are baked into the image
+# and never fetched at runtime (avoids network failures during inference).
+RUN python -c "from demucs.pretrained import get_model; get_model('htdemucs_6s')"
+
 # Copy the rest of the application source
 COPY . .
 

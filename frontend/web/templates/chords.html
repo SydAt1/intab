@@ -568,7 +568,10 @@ function loadTab(record, fileOrNull) {
   if (audioEl) { audioEl.pause(); audioEl.src = ''; cancelAnimationFrame(animFrame); }
   audioEl = new Audio();
   audioEl.volume = parseFloat(document.getElementById('volumeSlider').value);
-  if (record.audioUrl) audioEl.src = record.audioUrl;
+  if (record.audioUrl) {
+    const token = (typeof Auth !== 'undefined' && Auth.getToken?.()) || localStorage.getItem('access_token') || authToken || '';
+    audioEl.src = record.audioUrl + '?token=' + encodeURIComponent(token);
+  }
   else if (fileOrNull)  audioEl.src = URL.createObjectURL(fileOrNull);
 
   audioEl.addEventListener('loadedmetadata', () => {

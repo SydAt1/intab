@@ -765,9 +765,10 @@
             document.getElementById('tabSubtitle').textContent = data.tab_name || 'Transcription complete';
             document.getElementById('tabContent').textContent = data.tab_content || '(No tablature generated)';
             if (data.audio_url) {
+                const token = (typeof Auth !== 'undefined' && Auth.getToken?.()) || localStorage.getItem('access_token') || '';
                 document.getElementById('resultAudioBar').style.display = 'flex';
                 document.getElementById('resultFileName').textContent = currentFile?.name || 'Audio';
-                document.getElementById('resultAudio').src = data.audio_url;
+                document.getElementById('resultAudio').src = data.audio_url + '?token=' + encodeURIComponent(token);
             }
             showStatus('Tablature generated successfully', 'success');
         }

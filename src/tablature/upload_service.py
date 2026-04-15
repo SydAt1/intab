@@ -61,7 +61,7 @@ def separate_guitar(file_path: str, output_dir: str) -> str:
     """
     import subprocess
 
-    subprocess.run(
+    result = subprocess.run(
         [
             "python", "-m", "demucs",
             "--two-stems", "guitar",   # only output guitar + other, skips unused stems
@@ -69,8 +69,16 @@ def separate_guitar(file_path: str, output_dir: str) -> str:
             "--out", output_dir,
             file_path,
         ],
-        check=True,
+        capture_output=True,
+        text=True,
     )
+
+    if result.returncode != 0:
+        raise RuntimeError(
+            f"Demucs failed (exit {result.returncode}):\n"
+            f"stdout: {result.stdout.strip()}\n"
+            f"stderr: {result.stderr.strip()}"
+        )
 
     # Demucs saves output to: <output_dir>/htdemucs_6s/<track_name>/guitar.wav
     track_name = Path(file_path).stem

@@ -57,7 +57,7 @@ async def recognize_chords_api(
         storage_key = f"chords/{current_user.id}/{file_id}{ext}"
         
         s3_client.upload_audio(file_bytes, storage_key, file.content_type)
-        audio_url = s3_client.get_presigned_url(storage_key)
+        audio_url = f"/api/audio/{file_id}/stream"
         
         # Write bytes to temporary file for librosa to process
         temp_file_path = os.path.join(temp_dir, f"temp_upload_{file.filename}")
@@ -140,7 +140,7 @@ async def get_my_chords(
             "tab_name": r.tab_name,
             "status": r.status,
             "uploaded_at": r.uploaded_at,
-            "audio_url": s3_client.get_presigned_url(r.storage_key),
+            "audio_url": f"/api/audio/{r.id}/stream",
             "chords": chords_data
         })
     return results
@@ -219,7 +219,7 @@ async def recognize_chords_from_path(
 
         content_type = "audio/wav" if ext.lower() == ".wav" else "audio/mpeg"
         s3_client.upload_audio(file_bytes, storage_key, content_type)
-        audio_url = s3_client.get_presigned_url(storage_key)
+        audio_url = f"/api/audio/{file_id}/stream"
 
         # Optionally isolate guitar stem
         audio_for_chords = payload.file_path

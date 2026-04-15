@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException, Query
+from fastapi.responses import Response
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from typing import List, Optional
@@ -399,7 +400,8 @@ async def get_transcription_result(
         }
         
     tab_record = db.query(Tablature).filter(Tablature.audio_file_id == audio_id).first()
-    audio_url = s3_client.get_presigned_url(audio_record.storage_key)
+    # Use local streaming proxy instead of broken S3 presigned URLs
+    audio_url = f"/api/audio/{audio_id}/stream"
     
     return {
         "status": "done",
@@ -407,6 +409,56 @@ async def get_transcription_result(
         "tab_content": tab_record.tab_content if tab_record else None,
         "audio_url": audio_url
     }
+
+@router.get("/{audio_id}/stream")
+async def stream_audio(
+    audio_id: str,
+    token: str = Query(..., description="JWT auth token"),
+    db: Session = Depends(get_db),
+):
+    """Streams the audio file from S3 storage directly to the browser.
+    Uses a query-param token because <audio> elements cannot send Auth headers."""
+    from src.auth.jwt_utils import verify_token
+    payload = verify_token(token)
+    if payload is None or payload.get("sub") is None:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    user = db.query(User).filter(User.username == payload["sub"]).first()
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    audio_record = db.query(AudioFile).filter(
+        AudioFile.id == audio_id,
+        AudioFile.user_id == user.id
+    ).first()
+    
+    if not audio_record:
+        raise HTTPException(status_code=404, detail="Audio file not found")
+    
+    try:
+        file_bytes = s3_client.download_audio(audio_record.storage_key)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to retrieve audio: {str(e)}")
+    
+    # Determine content type from storage key extension
+    ext = os.path.splitext(audio_record.storage_key)[1].lower()
+    content_type_map = {
+        ".wav": "audio/wav",
+        ".mp3": "audio/mpeg",
+        ".flac": "audio/flac",
+        ".ogg": "audio/ogg",
+        ".m4a": "audio/mp4",
+    }
+    content_type = content_type_map.get(ext, "audio/wav")
+    
+    return Response(
+        content=file_bytes,
+        media_type=content_type,
+        headers={
+            "Content-Disposition": f'inline; filename="{audio_record.original_filename}"',
+            "Accept-Ranges": "bytes",
+        }
+    )
+
 
 @router.get("/search")
 async def search_uploads(
