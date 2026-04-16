@@ -362,8 +362,7 @@ torchaudio==2.10.0
     #   demucs
     #   fyp-project
     #   openunmix
-torchcodec==0.11.0
-    # via torchaudio (required by torchaudio>=2.7 for audio saving)
+# torchcodec removed — no CPU-only wheel exists; torchaudio falls back to soundfile
 tqdm==4.67.3
     # via
     #   demucs
