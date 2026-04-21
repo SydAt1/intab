@@ -402,3 +402,5 @@ yarl==1.22.0
     #   storage3
     #   supabase
     #   supabase-functions
+yt-dlp
+    # via fyp-project (URL audio download)
